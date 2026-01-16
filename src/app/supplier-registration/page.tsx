@@ -4,22 +4,27 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { InterestGroup } from "@/components/buyer-registration/InterestGroup"
 import { FormField } from "@/components/buyer-registration/FormField"
-import { ArrowLeftIcon, ShoppingCartIcon } from "@phosphor-icons/react"
+import { ArrowLeftIcon, CubeIcon } from "@phosphor-icons/react"
 import Link from "next/link"
 
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { BuyerRegistrationFormData, buyerRegistrationSchema } from "../schemas/buyerRegistration.schema"
+import {
+    SupplierRegistrationFormData,
+    supplierRegistrationSchema,
+} from "../schemas/supplierRegistration.schema"
+import { ProgressBar } from "@/components/supplier-registration/progressBar"
+import { PortfolioDropzone } from "@/components/supplier-registration/Dropzone"
 
-
-export default function BuyerRegistrationPage() {
-    const form = useForm<BuyerRegistrationFormData>({
-        resolver: zodResolver(buyerRegistrationSchema),
+export default function SupplierRegistrationPage() {
+    const form = useForm<SupplierRegistrationFormData>({
+        resolver: zodResolver(supplierRegistrationSchema),
         defaultValues: {
             categoriasProdutos: [],
             materiais: [],
             servicos: [],
             setores: [],
+            portfolio: [],
             aceitarPrivacidade: false,
             aceitarCookies: false,
         },
@@ -33,12 +38,14 @@ export default function BuyerRegistrationPage() {
         formState: { errors },
     } = form
 
-    const onSubmit = (data: BuyerRegistrationFormData) => {
+    const onSubmit = (data: SupplierRegistrationFormData) => {
         console.log("FORM DATA:", data)
     }
 
+
     return (
         <main className="mx-auto max-w-6xl px-6 py-10">
+            <ProgressBar step={1} />
             <div className="mb-6 flex justify-end">
                 <Link
                     href="/choose-profile"
@@ -51,12 +58,12 @@ export default function BuyerRegistrationPage() {
 
             <section className="mb-8">
                 <div className="flex items-center gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E7EFF5]">
-                        <ShoppingCartIcon size={20} weight="bold" color="#4F83A6" />
+                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EEF6DB]">
+                        <CubeIcon size={20} weight="bold" color="#9CCB3B" />
                     </span>
 
                     <div>
-                        <h1 className="text-xl font-semibold">Cadastro Fornecedor</h1>
+                        <h1 className="text-xl font-semibold">Cadastro Comprador</h1>
                         <p className="mt-1 text-sm text-muted-foreground">
                             Preencha os dados da sua empresa para começar a buscar fornecedores.
                         </p>
@@ -232,6 +239,42 @@ export default function BuyerRegistrationPage() {
                 </section>
 
                 <hr className="my-8" />
+                <div className="space-y-1">
+                    <label className="text-sm font-medium">
+                        Descrição institucional*
+                    </label>
+
+                    <textarea
+                        {...register("descricaoInstitucional")}
+                        rows={4}
+                        maxLength={300}
+                        className="w-full rounded-md border border-input p-3 text-sm"
+                        placeholder="Descreva sua empresa, especialidades e diferenciais..."
+                    />
+
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                        <span>{errors.descricaoInstitucional?.message}</span>
+                        <span>Máx. 300 caracteres</span>
+                    </div>
+                </div>
+                <hr className="my-8" />
+
+                <label className="text-sm font-medium">
+                    Upload de portfólio* (PDF, JPG, PNG - máx. 10MB cada)
+                </label>
+
+                <Controller
+                    control={form.control}
+                    name="portfolio"
+                    render={({ field }) => (
+                        <PortfolioDropzone
+                            onChange={(files: File[]) => field.onChange(files)}
+                        />
+                    )}
+                />
+
+                <hr className="my-8" />
+
                 <div className="mb-4 space-y-1 text-sm">
                     <a
                         href="#"
@@ -302,14 +345,42 @@ export default function BuyerRegistrationPage() {
                     )}
                 </div>
                 <hr className="my-8" />
+                <div className="space-y-2">
+                    <h3 className="text-sm font-semibold">
+                        Selecione a forma de pagamento:
+                    </h3>
 
+                    <div className="pb-2 font-light text-sm">
+                        R$ 000,00/mês - Cancele quando quiser
+                    </div>
+
+                    {["cartao", "boleto", "pix"].map(p => (
+                        <label key={p} className="flex items-center gap-2 text-sm">
+                            <input
+                                type="radio"
+                                value={p}
+                                {...register("formaPagamento")}
+                            />
+                            {p === "cartao" && "Cartão de crédito"}
+                            {p === "boleto" && "Boleto bancário"}
+                            {p === "pix" && "PIX"}
+                        </label>
+                    ))}
+
+                    {errors.formaPagamento && (
+                        <p className="text-xs text-red-500">
+                            {errors.formaPagamento.message}
+                        </p>
+                    )}
+                </div>
+                <hr className="my-8" />
 
                 <div className="mt-8 flex justify-center">
                     <Button
                         type="submit"
                         className="rounded-full bg-[#5B86A8] px-10 hover:bg-[#4A748F]"
                     >
-                        Finalizar cadastro e buscar fornecedores
+                        Avançar para pagamento
                     </Button>
                 </div>
             </form>
