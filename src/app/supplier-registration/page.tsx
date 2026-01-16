@@ -15,6 +15,7 @@ import {
 } from "../schemas/supplierRegistration.schema"
 import { ProgressBar } from "@/components/supplier-registration/progressBar"
 import { PortfolioDropzone } from "@/components/supplier-registration/Dropzone"
+import { useRouter } from "next/navigation"
 
 export default function SupplierRegistrationPage() {
     const form = useForm<SupplierRegistrationFormData>({
@@ -38,8 +39,14 @@ export default function SupplierRegistrationPage() {
         formState: { errors },
     } = form
 
+    const router = useRouter()
+
     const onSubmit = (data: SupplierRegistrationFormData) => {
-        console.log("FORM DATA:", data)
+        console.log("FORM DATA ETAPA 1:", data)
+
+        router.push(
+            `/supplier-registration/payment?payment=${data.formaPagamento}`
+        )
     }
 
 
