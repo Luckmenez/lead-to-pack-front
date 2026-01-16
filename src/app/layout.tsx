@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Header } from "../components/header";
+import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
   title: "Lead 2 Pack",
@@ -17,6 +18,7 @@ export default function RootLayout({
       <body>
         <Header />
         {children}
+         <Footer/>
       </body>
     </html>
   );
