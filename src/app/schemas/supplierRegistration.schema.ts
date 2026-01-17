@@ -13,28 +13,26 @@ export const supplierRegistrationSchema = z.object({
         .transform(v => v.replace(/\D/g, "")),
 
 
-    emailPessoal: z.string().email(),
+    emailPessoal: z.string().email({ message: "Informe o seu email pessoal" }),
+    emailComercial: z.string().email({ message: "Informe o seu email comercial" }),
 
     cnpj: z
         .string()
         .transform(v => v.replace(/\D/g, ""))
         .refine(v => v.length === 14, "CNPJ inválido"),
 
-    razaoSocial: z.string().min(3),
+    razaoSocial: z.string().min(3, "Informe a Razão Social"),
 
-    nomeFantasia: z.string().optional(),
+    nomeFantasia: z.string().min(2, "Informe o nome fantasia"),
 
     website: z
         .string()
-        .optional()
-        .refine(
-            v => !v || v.length === 0 || /^https?:\/\//.test(v),
-            { message: "Informe uma URL válida" }
-        ),
+        .min(1, "Informe o site")
+        .regex(/^https?:\/\//, "Informe uma URL válida"),
 
-    redeSocial: z.string().optional(),
-
-    emailComercial: z.string().email(),
+    redeSocial: z
+        .string()
+        .min(3, "Informe uma rede social válida"),
 
     telefoneComercial: z
         .string().min(10, "Telefone inválido")
@@ -47,7 +45,7 @@ export const supplierRegistrationSchema = z.object({
     setores: z.array(z.string()).min(1, "Selecione ao menos 1 setor"),
 
     descricaoInstitucional: z
-        .string()
+        .string({ message: "Campo obrigatório" })
         .min(30, "Mínimo de 30 caracteres")
         .max(300),
 
@@ -59,14 +57,13 @@ export const supplierRegistrationSchema = z.object({
             "Cada arquivo deve ter no máximo 10MB"
         ),
 
-    formaPagamento: z.enum(["cartao", "boleto", "pix"], {message: "Selecione uma forma de pagamento"}),
+    formaPagamento: z.enum(["cartao", "boleto", "pix"], { message: "Selecione uma forma de pagamento" }),
 
     aceitarPrivacidade: z.literal(true, {
-        errorMap: () => ({ message: "Obrigatório aceitar os termos" }),
+        message: "Você deve aceitar os termos de privacidade",
     }),
-
     aceitarCookies: z.literal(true, {
-        errorMap: () => ({ message: "Obrigatório aceitar os termos" }),
+        message: "Você deve aceitar a política de cookies",
     }),
 })
 

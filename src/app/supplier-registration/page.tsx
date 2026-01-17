@@ -43,7 +43,6 @@ export default function SupplierRegistrationPage() {
 
     const onSubmit = (data: SupplierRegistrationFormData) => {
         console.log("FORM DATA ETAPA 1:", data)
-
         router.push(
             `/supplier-registration/payment?payment=${data.formaPagamento}`
         )
@@ -130,10 +129,12 @@ export default function SupplierRegistrationPage() {
                     />
 
                     <FormField
-                        label="Nome Fantasia"
+                        label="Nome Fantasia*"
                         name="nomeFantasia"
                         register={register}
+                        error={errors.nomeFantasia?.message}
                     />
+
 
                     <FormField
                         label="Website"
@@ -146,6 +147,8 @@ export default function SupplierRegistrationPage() {
                         label="Rede Social (Instagram/LinkedIn/TikTok)"
                         name="redeSocial"
                         register={register}
+                        error={errors.redeSocial?.message}
+
                     />
 
                     <FormField
@@ -255,8 +258,11 @@ export default function SupplierRegistrationPage() {
                         {...register("descricaoInstitucional")}
                         rows={4}
                         maxLength={300}
-                        className="w-full rounded-md border border-input p-3 text-sm"
-                        placeholder="Descreva sua empresa, especialidades e diferenciais..."
+                        className={`w-full rounded-md border p-3 text-sm ${errors.descricaoInstitucional?.message
+                            ? "border-red-500 focus:ring-red-500"
+                            : "border-input"
+                            }`}
+
                     />
 
                     <div className="flex justify-between text-xs text-muted-foreground">
@@ -274,9 +280,19 @@ export default function SupplierRegistrationPage() {
                     control={form.control}
                     name="portfolio"
                     render={({ field }) => (
-                        <PortfolioDropzone
-                            onChange={(files: File[]) => field.onChange(files)}
-                        />
+                        <>
+                            <PortfolioDropzone
+                                value={field.value}
+                                onChange={(files: File[]) => field.onChange(files)}
+                                error={errors.portfolio?.message}
+                            />
+
+                            {errors.portfolio?.message && (
+                                <p className="mt-1 text-xs text-red-500">
+                                    {errors.portfolio.message}
+                                </p>
+                            )}
+                        </>
                     )}
                 />
 
@@ -315,18 +331,21 @@ export default function SupplierRegistrationPage() {
 
                 <div className="space-y-3 text-sm pt-4">
                     <div className="flex items-start gap-2">
-
-
-                        <Checkbox
-                            checked={watch("aceitarPrivacidade")}
-                            onCheckedChange={(v) =>
-                                setValue("aceitarPrivacidade", Boolean(v))
-                            }
+                        <Controller
+                            control={form.control}
+                            name="aceitarPrivacidade"
+                            render={({ field }) => (
+                                <Checkbox
+                                    checked={Boolean(field.value)}
+                                    onCheckedChange={(v) => field.onChange(Boolean(v))}
+                                />
+                            )}
                         />
                         <label>
                             Li e estou de acordo com os termos de uso e política de privacidade
                         </label>
                     </div>
+
                     {errors.aceitarPrivacidade && (
                         <p className="text-xs text-red-500">
                             {errors.aceitarPrivacidade.message}
@@ -334,23 +353,28 @@ export default function SupplierRegistrationPage() {
                     )}
 
                     <div className="flex items-start gap-2">
-                        <Checkbox
-                            checked={watch("aceitarCookies")}
-                            onCheckedChange={(v) =>
-                                setValue("aceitarCookies", Boolean(v))
-                            }
+                        <Controller
+                            control={form.control}
+                            name="aceitarCookies"
+                            render={({ field }) => (
+                                <Checkbox
+                                    checked={Boolean(field.value)}
+                                    onCheckedChange={(v) => field.onChange(Boolean(v))}
+                                />
+                            )}
                         />
-
                         <label>
                             Li e estou de acordo com a política de cookies e código de conduta
                         </label>
                     </div>
+
                     {errors.aceitarCookies && (
                         <p className="text-xs text-red-500">
                             {errors.aceitarCookies.message}
                         </p>
                     )}
                 </div>
+
                 <hr className="my-8" />
                 <div className="space-y-2">
                     <h3 className="text-sm font-semibold">
