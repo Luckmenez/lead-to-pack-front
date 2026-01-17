@@ -22,23 +22,18 @@ export const buyerRegistrationSchema = z.object({
     .string()
     .min(14, "CNPJ é obrigatório"),
 
-  razaoSocial: z
-    .string()
-    .min(2, "Razão social é obrigatória"),
+  razaoSocial: z.string().min(3, "Informe a Razão Social"),
 
-  nomeFantasia: z
-    .string()
-    .optional(),
+  nomeFantasia: z.string().min(2, "Informe o nome fantasia"),
 
   website: z
     .string()
-    .url("Website inválido")
-    .optional()
-    .or(z.literal("")),
+    .min(1, "Informe o site")
+    .regex(/^https?:\/\//, "Informe uma URL válida"),
 
   redeSocial: z
     .string()
-    .optional(),
+    .min(3, "Informe uma rede social válida"),
 
   emailComercial: z
     .string()
@@ -54,12 +49,12 @@ export const buyerRegistrationSchema = z.object({
   setores: z.array(z.string()).min(1, "Selecione ao menos um setor"),
 
   aceitarPrivacidade: z.literal(true, {
-    errorMap: () => ({ message: "Você deve aceitar os termos de privacidade" }),
+    message: "Você deve aceitar os termos de privacidade",
+  }),
+  aceitarCookies: z.literal(true, {
+    message: "Você deve aceitar a política de cookies",
   }),
 
-  aceitarCookies: z.literal(true, {
-    errorMap: () => ({ message: "Você deve aceitar a política de cookies" }),
-  }),
 })
 
 export type BuyerRegistrationFormData = z.infer<

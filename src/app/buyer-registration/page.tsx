@@ -7,7 +7,7 @@ import { FormField } from "@/components/buyer-registration/FormField"
 import { ArrowLeftIcon, ShoppingCartIcon } from "@phosphor-icons/react"
 import Link from "next/link"
 
-import { useForm } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { BuyerRegistrationFormData, buyerRegistrationSchema } from "../schemas/buyerRegistration.schema"
 
@@ -119,6 +119,7 @@ export default function BuyerRegistrationPage() {
                         label="Nome Fantasia"
                         name="nomeFantasia"
                         register={register}
+                        error={errors.nomeFantasia?.message}
                     />
 
                     <FormField
@@ -132,6 +133,7 @@ export default function BuyerRegistrationPage() {
                         label="Rede Social (Instagram/LinkedIn/TikTok)"
                         name="redeSocial"
                         register={register}
+                        error={errors.redeSocial?.message}
                     />
 
                     <FormField
@@ -265,18 +267,21 @@ export default function BuyerRegistrationPage() {
 
                 <div className="space-y-3 text-sm pt-4">
                     <div className="flex items-start gap-2">
-
-
-                        <Checkbox
-                            checked={watch("aceitarPrivacidade")}
-                            onCheckedChange={(v) =>
-                                setValue("aceitarPrivacidade", Boolean(v))
-                            }
+                        <Controller
+                            control={form.control}
+                            name="aceitarPrivacidade"
+                            render={({ field }) => (
+                                <Checkbox
+                                    checked={Boolean(field.value)}
+                                    onCheckedChange={(v) => field.onChange(Boolean(v))}
+                                />
+                            )}
                         />
                         <label>
                             Li e estou de acordo com os termos de uso e política de privacidade
                         </label>
                     </div>
+
                     {errors.aceitarPrivacidade && (
                         <p className="text-xs text-red-500">
                             {errors.aceitarPrivacidade.message}
@@ -284,23 +289,28 @@ export default function BuyerRegistrationPage() {
                     )}
 
                     <div className="flex items-start gap-2">
-                        <Checkbox
-                            checked={watch("aceitarCookies")}
-                            onCheckedChange={(v) =>
-                                setValue("aceitarCookies", Boolean(v))
-                            }
+                        <Controller
+                            control={form.control}
+                            name="aceitarCookies"
+                            render={({ field }) => (
+                                <Checkbox
+                                    checked={Boolean(field.value)}
+                                    onCheckedChange={(v) => field.onChange(Boolean(v))}
+                                />
+                            )}
                         />
-
                         <label>
                             Li e estou de acordo com a política de cookies e código de conduta
                         </label>
                     </div>
+
                     {errors.aceitarCookies && (
                         <p className="text-xs text-red-500">
                             {errors.aceitarCookies.message}
                         </p>
                     )}
                 </div>
+
                 <hr className="my-8" />
 
 
