@@ -2,8 +2,8 @@
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { InterestGroup } from "@/components/buyer-registration/InterestGroup"
-import { FormField } from "@/components/buyer-registration/FormField"
+import { InterestGroup } from "@/app/buyer-registration/buyer-registration-component/InterestGroup"
+import { FormField } from "@/components/ui/FormField"
 import { ArrowLeftIcon, CubeIcon } from "@phosphor-icons/react"
 import Link from "next/link"
 
@@ -13,9 +13,10 @@ import {
     SupplierRegistrationFormData,
     supplierRegistrationSchema,
 } from "../schemas/supplierRegistration.schema"
-import { ProgressBar } from "@/components/supplier-registration/progressBar"
-import { PortfolioDropzone } from "@/components/supplier-registration/Dropzone"
+import { ProgressBar } from "@/app/supplier-registration/supplier-registration-component/progressBar"
 import { useRouter } from "next/navigation"
+import { maskCNPJ, maskCPF, maskPhoneComercial, maskPhonePersonal, normalizeEmail } from "@/utils/masks"
+import { PortfolioDropzone } from "@/components/Dropzone"
 
 export default function SupplierRegistrationPage() {
     const form = useForm<SupplierRegistrationFormData>({
@@ -88,6 +89,7 @@ export default function SupplierRegistrationPage() {
                         name="cpf"
                         register={register}
                         error={errors.cpf?.message}
+                        onChangeCustom={maskCPF}
                     />
 
                     <FormField
@@ -100,10 +102,11 @@ export default function SupplierRegistrationPage() {
 
                     <FormField
                         label="Telefone/Whatsapp pessoal*"
-                        placeholder="(11) 99999-9999"
                         name="telefonePessoal"
                         register={register}
                         error={errors.telefonePessoal?.message}
+                        onChangeCustom={maskPhonePersonal}
+
                     />
 
                     <FormField
@@ -112,6 +115,7 @@ export default function SupplierRegistrationPage() {
                         name="emailPessoal"
                         register={register}
                         error={errors.emailPessoal?.message}
+                        onChangeCustom={normalizeEmail}
                     />
 
                     <FormField
@@ -119,6 +123,7 @@ export default function SupplierRegistrationPage() {
                         name="cnpj"
                         register={register}
                         error={errors.cnpj?.message}
+                        onChangeCustom={maskCNPJ}
                     />
 
                     <FormField
@@ -141,6 +146,7 @@ export default function SupplierRegistrationPage() {
                         name="website"
                         register={register}
                         error={errors.website?.message}
+                        onChangeCustom={normalizeEmail}
                     />
 
                     <FormField
@@ -148,6 +154,7 @@ export default function SupplierRegistrationPage() {
                         name="redeSocial"
                         register={register}
                         error={errors.redeSocial?.message}
+                        onChangeCustom={normalizeEmail}
 
                     />
 
@@ -156,6 +163,7 @@ export default function SupplierRegistrationPage() {
                         name="emailComercial"
                         register={register}
                         error={errors.emailComercial?.message}
+                        onChangeCustom={normalizeEmail}
                     />
 
                     <FormField
@@ -163,6 +171,7 @@ export default function SupplierRegistrationPage() {
                         name="telefoneComercial"
                         register={register}
                         error={errors.telefoneComercial?.message}
+                        onChangeCustom={maskPhoneComercial}
                     />
                 </div>
 

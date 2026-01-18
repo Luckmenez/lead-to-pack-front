@@ -6,15 +6,15 @@ export const supplierRegistrationSchema = z.object({
         .transform(v => v.replace(/\D/g, ""))
         .refine(v => v.length === 11, "CPF inválido"),
 
-    nomeCompleto: z.string().min(3),
+    nomeCompleto: z.string().min(3, "Informe seu nome completo"),
 
     telefonePessoal: z
         .string().min(10, "Telefone inválido")
         .transform(v => v.replace(/\D/g, "")),
 
 
-    emailPessoal: z.string().email({ message: "Informe o seu email pessoal" }),
-    emailComercial: z.string().email({ message: "Informe o seu email comercial" }),
+    emailPessoal: z.string().email({ message: "Informe um E-mail válido" }),
+    emailComercial: z.string().email({ message: "Informe um E-mail comercial valido" }),
 
     cnpj: z
         .string()

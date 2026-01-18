@@ -1,5 +1,5 @@
-import { ProfileCard } from "@/components/choose-profile/profile-card"
-import { LoginForm } from "@/components/choose-profile/login-form"
+import { ProfileCard } from "@/app/choose-profile/choose-profile-component/profile-card"
+import { LoginForm } from "./choose-profile-component/login-form"
 
 export default function ChooseProfilePage() {
     return (

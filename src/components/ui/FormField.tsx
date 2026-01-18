@@ -1,4 +1,4 @@
-import { Input } from "../ui/input"
+import { Input } from "./input"
 
 type FormFieldProps = {
   label: string
@@ -6,6 +6,7 @@ type FormFieldProps = {
   placeholder?: string
   register: any
   error?: string
+  onChangeCustom?: (value: string) => string
 }
 
 export function FormField({
@@ -14,6 +15,7 @@ export function FormField({
   placeholder,
   register,
   error,
+  onChangeCustom,
 }: FormFieldProps) {
   return (
     <div className="space-y-1">
@@ -29,14 +31,20 @@ export function FormField({
       </label>
 
       <Input
-        {...register(name)}
         placeholder={placeholder}
-        className={error ? "border-red-500" : ""}
+        className={error ? "border-red-500 focus:ring-red-500" : ""}
+        {...register(name, {
+          onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+            if (!onChangeCustom) return e
+
+            const masked = onChangeCustom(e.target.value)
+            e.target.value = masked
+            return e
+          },
+        })}
       />
 
-      {error && (
-        <p className="text-xs text-red-500">{error}</p>
-      )}
+      {error && <p className="text-xs text-red-500">{error}</p>}
     </div>
   )
 }

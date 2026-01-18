@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ProgressBar } from "@/components/supplier-registration/progressBar"
+import { ProgressBar } from "@/app/supplier-registration/supplier-registration-component/progressBar"
 import { useSearchParams, useRouter } from "next/navigation"
 import { paymentConfig, PaymentMethod } from "../payment/payment.config"
 import { ArrowLeftIcon, CubeIcon } from "@phosphor-icons/react"
