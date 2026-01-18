@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { ArrowLeftIcon, CreditCardIcon } from "@phosphor-icons/react"
 import Link from "next/link"
-import { ProgressBar } from "@/components/supplier-registration/progressBar"
+import { ProgressBar } from "@/app/supplier-registration/supplier-registration-component/progressBar"
 import { useSearchParams, useRouter } from "next/navigation"
 import { paymentConfig, PaymentMethod } from "./payment.config"
 

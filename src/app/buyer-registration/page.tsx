@@ -2,14 +2,15 @@
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { InterestGroup } from "@/components/buyer-registration/InterestGroup"
-import { FormField } from "@/components/buyer-registration/FormField"
+import { InterestGroup } from "@/app/buyer-registration/buyer-registration-component/InterestGroup"
+import { FormField } from "@/components/ui/FormField"
 import { ArrowLeftIcon, ShoppingCartIcon } from "@phosphor-icons/react"
 import Link from "next/link"
 
 import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { BuyerRegistrationFormData, buyerRegistrationSchema } from "../schemas/buyerRegistration.schema"
+import { maskCNPJ, maskCPF, maskPhoneComercial, maskPhonePersonal, normalizeEmail } from "@/utils/masks"
 
 
 export default function BuyerRegistrationPage() {
@@ -75,6 +76,7 @@ export default function BuyerRegistrationPage() {
                         name="cpf"
                         register={register}
                         error={errors.cpf?.message}
+                        onChangeCustom={maskCPF}
                     />
 
                     <FormField
@@ -91,6 +93,7 @@ export default function BuyerRegistrationPage() {
                         name="telefonePessoal"
                         register={register}
                         error={errors.telefonePessoal?.message}
+                        onChangeCustom={maskPhonePersonal}
                     />
 
                     <FormField
@@ -99,6 +102,7 @@ export default function BuyerRegistrationPage() {
                         name="emailPessoal"
                         register={register}
                         error={errors.emailPessoal?.message}
+                        onChangeCustom={normalizeEmail}
                     />
 
                     <FormField
@@ -106,6 +110,7 @@ export default function BuyerRegistrationPage() {
                         name="cnpj"
                         register={register}
                         error={errors.cnpj?.message}
+                        onChangeCustom={maskCNPJ}
                     />
 
                     <FormField
@@ -141,6 +146,7 @@ export default function BuyerRegistrationPage() {
                         name="emailComercial"
                         register={register}
                         error={errors.emailComercial?.message}
+                        onChangeCustom={normalizeEmail}
                     />
 
                     <FormField
@@ -148,6 +154,7 @@ export default function BuyerRegistrationPage() {
                         name="telefoneComercial"
                         register={register}
                         error={errors.telefoneComercial?.message}
+                        onChangeCustom={maskPhoneComercial}
                     />
                 </div>
 
