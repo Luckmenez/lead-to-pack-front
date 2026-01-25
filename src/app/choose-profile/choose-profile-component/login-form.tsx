@@ -66,7 +66,7 @@ export function LoginForm() {
                                 />
                             </div>
                         </div>
-                        <Button className="h-10 w-66 rounded-full bg-[#5B86A8] font-semibold hover:bg-[#4A748F]">
+                        <Button className="h-10 w-66 rounded-full bg-[#5B86A8] font-semibold hover:bg-[#4A748F] cursor-pointer">
                             Entrar
                         </Button>
                     </div>

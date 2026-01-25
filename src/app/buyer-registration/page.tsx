@@ -29,8 +29,6 @@ export default function BuyerRegistrationPage() {
     const {
         handleSubmit,
         register,
-        watch,
-        setValue,
         formState: { errors },
     } = form
 

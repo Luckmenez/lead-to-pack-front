@@ -25,6 +25,17 @@ export function maskPhonePersonal(value: string) {
         .replace(/(\d{5})(\d{4})$/, "$1-$2")
 }
 
+export function maskCEP(value: string) {
+    return value
+        .replace(/\D/g, "")
+        .replace(/^(\d{5})(\d)/, "$1-$2")
+        .slice(0, 9)
+}
+
+export function numberEnterprise(value: string) {
+    return value.replace(/\D/g, "")
+}
+
 export function maskPhoneComercial(value: string) {
     return value
         .replace(/\D/g, "")
