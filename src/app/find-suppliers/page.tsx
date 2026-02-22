@@ -26,9 +26,9 @@ function SupplierCard({ supplier }: { supplier: SupplierItem }) {
     supplier.descricaoInstitucional?.slice(0, 180) +
     (supplier.descricaoInstitucional?.length > 180 ? "..." : "");
 
-  const supplierExt = supplier as SupplierItem & { cidade?: string; estado?: string; arquivos?: { nome: string; url: string }[] };
-  const cidade = supplierExt.cidade;
-  const estado = supplierExt.estado;
+  const cidade = supplier.cidade;
+  const estado = supplier.estado;
+  const supplierExt = supplier as SupplierItem & { arquivos?: { nome: string; url: string }[] };
   const arquivos = supplierExt.arquivos ?? [];
 
   return (

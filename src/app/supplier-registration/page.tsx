@@ -22,6 +22,36 @@ import { PortfolioDropzone } from "@/components/Dropzone"
 import { registerFornecedor } from "@/lib/api/auth.api"
 import { useAuth } from "@/contexts/AuthContext"
 
+const ESTADOS_BR = [
+    { uf: "AC", nome: "Acre" },
+    { uf: "AL", nome: "Alagoas" },
+    { uf: "AP", nome: "Amapá" },
+    { uf: "AM", nome: "Amazonas" },
+    { uf: "BA", nome: "Bahia" },
+    { uf: "CE", nome: "Ceará" },
+    { uf: "DF", nome: "Distrito Federal" },
+    { uf: "ES", nome: "Espírito Santo" },
+    { uf: "GO", nome: "Goiás" },
+    { uf: "MA", nome: "Maranhão" },
+    { uf: "MT", nome: "Mato Grosso" },
+    { uf: "MS", nome: "Mato Grosso do Sul" },
+    { uf: "MG", nome: "Minas Gerais" },
+    { uf: "PA", nome: "Pará" },
+    { uf: "PB", nome: "Paraíba" },
+    { uf: "PR", nome: "Paraná" },
+    { uf: "PE", nome: "Pernambuco" },
+    { uf: "PI", nome: "Piauí" },
+    { uf: "RJ", nome: "Rio de Janeiro" },
+    { uf: "RN", nome: "Rio Grande do Norte" },
+    { uf: "RS", nome: "Rio Grande do Sul" },
+    { uf: "RO", nome: "Rondônia" },
+    { uf: "RR", nome: "Roraima" },
+    { uf: "SC", nome: "Santa Catarina" },
+    { uf: "SP", nome: "São Paulo" },
+    { uf: "SE", nome: "Sergipe" },
+    { uf: "TO", nome: "Tocantins" },
+]
+
 export default function SupplierRegistrationPage() {
     const form = useForm<SupplierRegistrationFormData>({
         resolver: zodResolver(supplierRegistrationSchema),
@@ -31,6 +61,8 @@ export default function SupplierRegistrationPage() {
             servicos: [],
             setores: [],
             portfolio: [],
+            cidade: "",
+            estado: "",
             senha: "",
             confirmarSenha: "",
             aceitarPrivacidade: false,
@@ -68,6 +100,8 @@ export default function SupplierRegistrationPage() {
                 setores: data.setores,
                 descricaoInstitucional: data.descricaoInstitucional,
                 formaPagamento: data.formaPagamento,
+                cidade: data.cidade,
+                estado: data.estado,
                 website: data.website || undefined,
                 redeSocial: data.redeSocial || undefined,
             })
@@ -201,6 +235,34 @@ export default function SupplierRegistrationPage() {
                         register={register}
                         error={errors.telefoneComercial?.message}
                         onChangeCustom={maskPhoneComercial}
+                    />
+
+                    <div className="space-y-1">
+                        <label className="text-sm font-medium">
+                            Estado*
+                        </label>
+                        <select
+                            {...register("estado")}
+                            className={`w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4F83A6] ${errors.estado ? "border-red-500" : "border-input"}`}
+                        >
+                            <option value="">Selecione o estado</option>
+                            {ESTADOS_BR.map((e) => (
+                                <option key={e.uf} value={e.uf}>
+                                    {e.nome}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.estado && (
+                            <p className="text-xs text-red-500">{errors.estado.message}</p>
+                        )}
+                    </div>
+
+                    <FormField
+                        label="Cidade*"
+                        placeholder="Ex: São Paulo"
+                        name="cidade"
+                        register={register}
+                        error={errors.cidade?.message}
                     />
                 </div>
 

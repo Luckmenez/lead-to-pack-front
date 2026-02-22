@@ -96,6 +96,8 @@ export type RegisterFornecedorRequest = {
   setores: string[];
   descricaoInstitucional: string;
   formaPagamento: "cartao" | "boleto" | "pix";
+  cidade: string;
+  estado: string;
   website?: string;
   redeSocial?: string;
 };

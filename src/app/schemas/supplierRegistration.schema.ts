@@ -34,6 +34,9 @@ export const supplierRegistrationSchema = z.object({
         .string()
         .min(3, "Informe uma rede social válida"),
 
+    cidade: z.string().min(2, "Informe a cidade"),
+    estado: z.string().min(2, "Selecione o estado"),
+
     telefoneComercial: z
         .string().min(10, "Telefone inválido")
         .transform(v => v.replace(/\D/g, "")),

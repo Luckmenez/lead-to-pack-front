@@ -8,6 +8,8 @@ export type SupplierItem = {
   materiais: string[];
   servicos: string[];
   setores: string[];
+  cidade?: string;
+  estado?: string;
 };
 
 export type GetSuppliersParams = {
