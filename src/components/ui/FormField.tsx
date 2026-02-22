@@ -32,13 +32,13 @@ export function FormField({
 
       <Input
         placeholder={placeholder}
-        className={error ? "border-red-500 focus:ring-red-500" : ""}
+        className={`bg-white ${
+          error ? "border-red-500 focus:ring-red-500" : ""
+        }`}
         {...register(name, {
           onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
             if (!onChangeCustom) return e
-
-            const masked = onChangeCustom(e.target.value)
-            e.target.value = masked
+            e.target.value = onChangeCustom(e.target.value)
             return e
           },
         })}
