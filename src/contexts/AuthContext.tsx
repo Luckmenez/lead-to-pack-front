@@ -40,6 +40,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     isAuthenticated: false,
   })
 
+  const logout = useCallback(() => {
+    localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem(USER_KEY)
+    localStorage.removeItem(TIPO_KEY)
+    setState({
+      token: null,
+      user: null,
+      isLoading: false,
+      isAuthenticated: false,
+    })
+  }, [])
+
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_KEY)
     const rawUser = localStorage.getItem(USER_KEY)
@@ -80,18 +92,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       user,
       isLoading: false,
       isAuthenticated: true,
-    })
-  }, [])
-
-  const logout = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY)
-    localStorage.removeItem(USER_KEY)
-    localStorage.removeItem(TIPO_KEY)
-    setState({
-      token: null,
-      user: null,
-      isLoading: false,
-      isAuthenticated: false,
     })
   }, [])
 

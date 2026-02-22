@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { InterestGroup } from "@/app/buyer-registration/buyer-registration-component/InterestGroup"
 import { FormField } from "@/components/ui/FormField"
+import { PasswordField } from "@/components/ui/PasswordField"
 import { ArrowLeftIcon, CubeIcon } from "@phosphor-icons/react"
 import Link from "next/link"
 
@@ -27,6 +28,8 @@ export default function SupplierRegistrationPage() {
             servicos: [],
             setores: [],
             portfolio: [],
+            senha: "",
+            confirmarSenha: "",
             aceitarPrivacidade: false,
             aceitarCookies: false,
         },
@@ -56,7 +59,7 @@ export default function SupplierRegistrationPage() {
             <div className="mb-6 flex justify-end">
                 <Link
                     href="/choose-profile"
-                    className="flex items-center gap-2 rounded-full bg-[#E7EFF5] px-4 py-1.5 text-sm font-medium text-[#4F83A6] transition hover:bg-[#dbe7f0]"
+                    className="flex cursor-pointer items-center gap-2 rounded-full bg-[#E7EFF5] px-4 py-1.5 text-sm font-medium text-[#4F83A6] transition hover:bg-[#dbe7f0]"
                 >
                     <ArrowLeftIcon size={14} weight="bold" />
                     Voltar
@@ -70,9 +73,9 @@ export default function SupplierRegistrationPage() {
                     </span>
 
                     <div>
-                        <h1 className="text-xl font-semibold">Cadastro Comprador</h1>
+                        <h1 className="text-xl font-semibold">Cadastro Fornecedor</h1>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            Preencha os dados da sua empresa para começar a buscar fornecedores.
+                            Preencha os dados da sua empresa para se cadastrar como fornecedor de embalagens.
                         </p>
                     </div>
                 </div>
@@ -307,6 +310,30 @@ export default function SupplierRegistrationPage() {
 
                 <hr className="my-8" />
 
+                <section className="space-y-4">
+                    <h2 className="text-sm font-semibold">
+                        Defina uma senha de 8 dígitos para realizar seu login:
+                    </h2>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <PasswordField
+                            label="Senha*"
+                            placeholder="Ex: Xplz@1234"
+                            register={register}
+                            name="senha"
+                            error={errors.senha?.message}
+                        />
+                        <PasswordField
+                            label="Confirme sua senha*"
+                            placeholder="Confirme sua senha"
+                            register={register}
+                            name="confirmarSenha"
+                            error={errors.confirmarSenha?.message}
+                        />
+                    </div>
+                </section>
+
+                <hr className="my-8" />
+
                 <div className="mb-4 space-y-1 text-sm">
                     <a
                         href="#"
@@ -339,7 +366,7 @@ export default function SupplierRegistrationPage() {
 
 
                 <div className="space-y-3 text-sm pt-4">
-                    <div className="flex items-start gap-2">
+                    <div className="flex cursor-pointer items-start gap-2">
                         <Controller
                             control={form.control}
                             name="aceitarPrivacidade"
@@ -361,7 +388,7 @@ export default function SupplierRegistrationPage() {
                         </p>
                     )}
 
-                    <div className="flex items-start gap-2">
+                    <div className="flex cursor-pointer items-start gap-2">
                         <Controller
                             control={form.control}
                             name="aceitarCookies"
@@ -395,7 +422,7 @@ export default function SupplierRegistrationPage() {
                     </div>
 
                     {["cartao", "boleto", "pix"].map(p => (
-                        <label key={p} className="flex items-center gap-2 text-sm">
+                        <label key={p} className="flex cursor-pointer items-center gap-2 text-sm">
                             <input
                                 type="radio"
                                 value={p}

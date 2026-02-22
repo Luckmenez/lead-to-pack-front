@@ -2,8 +2,8 @@
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { InterestGroup } from "@/app/buyer-registration/buyer-registration-component/InterestGroup"
 import { FormField } from "@/components/ui/FormField"
+import { PasswordField } from "@/components/ui/PasswordField"
 import { ArrowLeftIcon, ShoppingCartIcon } from "@phosphor-icons/react"
 import Link from "next/link"
 
@@ -17,10 +17,8 @@ export default function BuyerRegistrationPage() {
     const form = useForm<BuyerRegistrationFormData>({
         resolver: zodResolver(buyerRegistrationSchema),
         defaultValues: {
-            categoriasProdutos: [],
-            materiais: [],
-            servicos: [],
-            setores: [],
+            senha: "",
+            confirmarSenha: "",
             aceitarPrivacidade: false,
             aceitarCookies: false,
         },
@@ -41,7 +39,7 @@ export default function BuyerRegistrationPage() {
             <div className="mb-6 flex justify-end">
                 <Link
                     href="/choose-profile"
-                    className="flex items-center gap-2 rounded-full bg-[#E7EFF5] px-4 py-1.5 text-sm font-medium text-[#4F83A6] transition hover:bg-[#dbe7f0]"
+                    className="flex cursor-pointer items-center gap-2 rounded-full bg-[#E7EFF5] px-4 py-1.5 text-sm font-medium text-[#4F83A6] transition hover:bg-[#dbe7f0]"
                 >
                     <ArrowLeftIcon size={14} weight="bold" />
                     Voltar
@@ -55,7 +53,7 @@ export default function BuyerRegistrationPage() {
                     </span>
 
                     <div>
-                        <h1 className="text-xl font-semibold">Cadastro Fornecedor</h1>
+                        <h1 className="text-xl font-semibold">Cadastro Comprador</h1>
                         <p className="mt-1 text-sm text-muted-foreground">
                             Preencha os dados da sua empresa para começar a buscar fornecedores.
                         </p>
@@ -158,84 +156,26 @@ export default function BuyerRegistrationPage() {
 
                 <hr className="my-8" />
 
-                <section className="space-y-6">
+                <section className="space-y-4">
                     <h2 className="text-sm font-semibold">
-                        Selecione os itens de interesse:
+                        Defina uma senha de 8 dígitos para realizar seu login:
                     </h2>
-
-                    <InterestGroup
-                        title="Categorias de Produtos"
-                        name="categoriasProdutos"
-                        items={[
-                            "Embalagens Primárias",
-                            "Embalagens Secundárias",
-                            "Embalagens Terciárias",
-                            "Acessórios e Componentes",
-                            "Etiquetas e Rótulos",
-                            "Embalagens Sustentáveis/Recicladas",
-                        ]}
-                        control={form.control}
-                        error={errors.categoriasProdutos?.message}
-                    />
-
-                    <InterestGroup
-                        title="Materiais"
-                        name="materiais"
-                        items={[
-                            "Papel / Papelão",
-                            "Plásticos",
-                            "Vidro",
-                            "Metal e Alumínio",
-                            "Madeira / Bambu",
-                            "Tecido / Têxtil",
-                            "Biopolímeros / Compostáveis",
-                            "Multicamadas / Laminados",
-                            "Rótulos e Etiquetas",
-                            "Outros (Cerâmica, EPS)",
-                        ]}
-                        control={form.control}
-                        error={errors.materiais?.message}
-                    />
-
-                    <InterestGroup
-                        title="Serviços"
-                        name="servicos"
-                        items={[
-                            "Design & Desenvolvimento",
-                            "Prototipagem e Amostras",
-                            "Impressão e Personalização",
-                            "Produção Própria",
-                            "Private Label",
-                            "Fornecimento Sob Demanda (JIT)",
-                            "Consultoria em Embalagens",
-                            "Logística e Armazenagem",
-                            "Reciclagem e Pós-consumo",
-                        ]}
-                        control={form.control}
-                        error={errors.servicos?.message}
-                    />
-
-                    <InterestGroup
-                        title="Setores"
-                        name="setores"
-                        items={[
-                            "Alimentos & Bebidas",
-                            "Farmacêutico & Hospitalar",
-                            "Cosmético & Higiene",
-                            "Editorial / Papelaria",
-                            "Domissanitários",
-                            "Pet",
-                            "E-commerce & Logística",
-                            "Industrial & Químico",
-                            "Moda & Têxtil",
-                            "Eletrônicos",
-                            "Orgânicos",
-                            "Bebidas Alcoólicas",
-                            "Outros",
-                        ]}
-                        control={form.control}
-                        error={errors.setores?.message}
-                    />
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <PasswordField
+                            label="Senha*"
+                            placeholder="Ex: Xplz@1234"
+                            register={register}
+                            name="senha"
+                            error={errors.senha?.message}
+                        />
+                        <PasswordField
+                            label="Confirme sua senha*"
+                            placeholder="Confirme sua senha"
+                            register={register}
+                            name="confirmarSenha"
+                            error={errors.confirmarSenha?.message}
+                        />
+                    </div>
                 </section>
 
                 <hr className="my-8" />
@@ -271,7 +211,7 @@ export default function BuyerRegistrationPage() {
 
 
                 <div className="space-y-3 text-sm pt-4">
-                    <div className="flex items-start gap-2">
+                    <div className="flex cursor-pointer items-start gap-2">
                         <Controller
                             control={form.control}
                             name="aceitarPrivacidade"
@@ -293,7 +233,7 @@ export default function BuyerRegistrationPage() {
                         </p>
                     )}
 
-                    <div className="flex items-start gap-2">
+                    <div className="flex cursor-pointer items-start gap-2">
                         <Controller
                             control={form.control}
                             name="aceitarCookies"

@@ -86,7 +86,7 @@ export function ProfileCard({ type }: Props) {
             </CardContent>
             <CardFooter className="mt-auto px-6 pb-6">
                 {type === "comprador" && (
-                    <Link href="/buyer-registration" className="w-full">
+                    <Link href="/buyer-registration" className="w-full cursor-pointer">
                         <Button
                             className={`w-full rounded-lg text-white ${data.button} cursor-pointer`}
                         >
@@ -96,7 +96,7 @@ export function ProfileCard({ type }: Props) {
                 )}
 
                 {type === "fornecedor" && (
-                    <Link href="/supplier-registration" className="w-full">
+                    <Link href="/supplier-registration" className="w-full cursor-pointer">
                         <Button
                             className={`w-full rounded-lg text-white ${data.button} cursor-pointer`}
                         >
@@ -106,7 +106,7 @@ export function ProfileCard({ type }: Props) {
                 )}
 
                 {type === "profissional" && (
-                      <Link href="prof-registration" className="w-full">
+                      <Link href="/prof-registration" className="w-full cursor-pointer">
                     <Button
                         className={`w-full rounded-lg text-white ${data.button} cursor-pointer`}
                     >

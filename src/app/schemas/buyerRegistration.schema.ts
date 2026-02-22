@@ -43,18 +43,24 @@ export const buyerRegistrationSchema = z.object({
     .string()
     .min(10, "Telefone comercial é obrigatório"),
 
-  categoriasProdutos: z.array(z.string()).min(1, "Selecione ao menos uma categoria"),
-  materiais: z.array(z.string()).min(1, "Selecione ao menos um material"),
-  servicos: z.array(z.string()).min(1, "Selecione ao menos um serviço"),
-  setores: z.array(z.string()).min(1, "Selecione ao menos um setor"),
+  senha: z
+    .string()
+    .min(8, "Senha deve ter no mínimo 8 caracteres")
+    .regex(
+      /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/,
+      "Senha deve ter uma letra maiúscula e um caractere especial"
+    ),
+  confirmarSenha: z.string(),
 
-  aceitarPrivacidade: z.literal(true, {
+  aceitarPrivacidade: z.boolean().refine((v) => v === true, {
     message: "Você deve aceitar os termos de privacidade",
   }),
-  aceitarCookies: z.literal(true, {
+  aceitarCookies: z.boolean().refine((v) => v === true, {
     message: "Você deve aceitar a política de cookies",
   }),
-
+}).refine((data) => data.senha === data.confirmarSenha, {
+  message: "As senhas não coincidem",
+  path: ["confirmarSenha"],
 })
 
 export type BuyerRegistrationFormData = z.infer<

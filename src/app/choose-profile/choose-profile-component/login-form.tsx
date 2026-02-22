@@ -40,10 +40,11 @@ export function LoginForm() {
             const res = await login({ cpf: data.cpf, senha: data.senha })
             if (res.tipo === "comprador" && res.comprador) {
                 loginComprador(res.accessToken, res.comprador)
+                router.push("/find-suppliers")
             } else if (res.tipo === "fornecedor" && res.fornecedor) {
                 loginFornecedor(res.accessToken, res.fornecedor)
+                router.push("/")
             }
-            router.push("/")
         } catch (e) {
             setSubmitError(e instanceof Error ? e.message : "Erro ao fazer login")
         }
@@ -161,7 +162,7 @@ export function LoginForm() {
 
                         <div className="mt-4 flex justify-end">
                             <div className="w-[300px] text-right">
-                                <a className="text-sm text-blue-600 hover:underline">
+                                <a href="#" className="cursor-pointer text-sm text-blue-600 hover:underline">
                                     Esqueci a senha
                                 </a>
 

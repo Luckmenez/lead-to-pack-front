@@ -10,7 +10,7 @@ import {
 
 export function Footer() {
     return (
-        <footer className="relative w-full bg-[#0B2443] text-white">
+        <footer className="relative mt-auto shrink-0 w-full bg-[#0B2443] text-white">
             <div className="mx-auto flex max-w-6xl flex-col items-end px-8 py-12">
                 <span className="mb-4 text-sm tracking-widest">
                     SIGA-NOS
@@ -49,7 +49,7 @@ export function Footer() {
             <a
                 href="#"
                 aria-label="WhatsApp"
-                className="absolute bottom-6 right-6 z-50 flex items-center justify-center rounded-full bg-[#25D366] shadow-lg hover:scale-105 hover:opacity-95 transition"
+                className="absolute bottom-6 right-6 z-50 flex cursor-pointer items-center justify-center rounded-full bg-[#25D366] shadow-lg transition hover:scale-105 hover:opacity-95"
             >
                 <Image
                     src="/whatsapp-svgrepo-com.svg"

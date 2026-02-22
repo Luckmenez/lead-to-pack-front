@@ -16,10 +16,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body>
+      <body className="flex min-h-screen flex-col">
         <AuthProvider>
           <Header />
-          {children}
+          <div className="flex-1">{children}</div>
           <Footer />
         </AuthProvider>
       </body>

@@ -59,12 +59,24 @@ export const supplierRegistrationSchema = z.object({
 
     formaPagamento: z.enum(["cartao", "boleto", "pix"], { message: "Selecione uma forma de pagamento" }),
 
-    aceitarPrivacidade: z.literal(true, {
+    senha: z
+        .string()
+        .min(8, "Senha deve ter no mínimo 8 caracteres")
+        .regex(
+            /^(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/,
+            "Senha deve ter uma letra maiúscula e um caractere especial"
+        ),
+    confirmarSenha: z.string(),
+
+    aceitarPrivacidade: z.boolean().refine((v) => v === true, {
         message: "Você deve aceitar os termos de privacidade",
     }),
-    aceitarCookies: z.literal(true, {
+    aceitarCookies: z.boolean().refine((v) => v === true, {
         message: "Você deve aceitar a política de cookies",
     }),
+}).refine((data) => data.senha === data.confirmarSenha, {
+    message: "As senhas não coincidem",
+    path: ["confirmarSenha"],
 })
 
 export type SupplierRegistrationFormData = z.infer<
