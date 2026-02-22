@@ -1,5 +1,7 @@
 "use client"
 
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { FormField } from "@/components/ui/FormField"
@@ -11,6 +13,8 @@ import { Controller, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { BuyerRegistrationFormData, buyerRegistrationSchema } from "../schemas/buyerRegistration.schema"
 import { maskCNPJ, maskCPF, maskPhoneComercial, maskPhonePersonal, normalizeEmail } from "@/utils/masks"
+import { registerComprador } from "@/lib/api/auth.api"
+import { useAuth } from "@/contexts/AuthContext"
 
 
 export default function BuyerRegistrationPage() {
@@ -24,14 +28,38 @@ export default function BuyerRegistrationPage() {
         },
     })
 
+    const router = useRouter()
+    const { loginComprador } = useAuth()
+    const [submitError, setSubmitError] = useState<string | null>(null)
+
     const {
         handleSubmit,
         register,
-        formState: { errors },
+        formState: { errors, isSubmitting },
     } = form
 
-    const onSubmit = (data: BuyerRegistrationFormData) => {
-        console.log("FORM DATA:", data)
+    const onSubmit = async (data: BuyerRegistrationFormData) => {
+        setSubmitError(null)
+        try {
+            const res = await registerComprador({
+                cpf: String(data.cpf).replace(/\D/g, ""),
+                senha: data.senha,
+                nomeCompleto: data.nomeCompleto,
+                telefonePessoal: String(data.telefonePessoal).replace(/\D/g, ""),
+                emailPessoal: data.emailPessoal,
+                cnpj: String(data.cnpj).replace(/\D/g, ""),
+                razaoSocial: data.razaoSocial,
+                nomeFantasia: data.nomeFantasia || undefined,
+                emailComercial: data.emailComercial,
+                telefoneComercial: String(data.telefoneComercial).replace(/\D/g, ""),
+                website: data.website || undefined,
+                redeSocial: data.redeSocial || undefined,
+            })
+            loginComprador(res.accessToken, res.comprador)
+            router.push("/find-suppliers")
+        } catch (e) {
+            setSubmitError(e instanceof Error ? e.message : "Erro ao realizar cadastro")
+        }
     }
 
     return (
@@ -258,13 +286,17 @@ export default function BuyerRegistrationPage() {
 
                 <hr className="my-8" />
 
+                {submitError && (
+                    <p className="mb-4 text-sm text-red-500">{submitError}</p>
+                )}
 
                 <div className="mt-8 flex justify-center">
                     <Button
                         type="submit"
+                        disabled={isSubmitting}
                         className="rounded-full bg-[#5B86A8] px-10 hover:bg-[#4A748F]"
                     >
-                        Finalizar cadastro e buscar fornecedores
+                        {isSubmitting ? "Cadastrando..." : "Finalizar cadastro e buscar fornecedores"}
                     </Button>
                 </div>
             </form>

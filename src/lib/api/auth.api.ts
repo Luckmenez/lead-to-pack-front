@@ -17,6 +17,30 @@ export type LoginCompradorResponse = {
   comprador: CompradorUser;
 };
 
+export type RegisterCompradorRequest = {
+  cpf: string;
+  senha: string;
+  nomeCompleto: string;
+  telefonePessoal: string;
+  emailPessoal: string;
+  cnpj: string;
+  razaoSocial: string;
+  emailComercial: string;
+  telefoneComercial: string;
+  nomeFantasia?: string;
+  website?: string;
+  redeSocial?: string;
+};
+
+export async function registerComprador(
+  data: RegisterCompradorRequest
+): Promise<LoginCompradorResponse> {
+  return apiClient<LoginCompradorResponse>("/auth/comprador/register", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
 export async function loginComprador(
   data: LoginCompradorRequest
 ): Promise<LoginCompradorResponse> {
@@ -54,6 +78,36 @@ export type LoginFornecedorResponse = {
   accessToken: string;
   fornecedor: FornecedorUser;
 };
+
+export type RegisterFornecedorRequest = {
+  cpf: string;
+  senha: string;
+  nomeCompleto: string;
+  telefonePessoal: string;
+  emailPessoal: string;
+  cnpj: string;
+  razaoSocial: string;
+  nomeFantasia: string;
+  emailComercial: string;
+  telefoneComercial: string;
+  categoriasProdutos: string[];
+  materiais: string[];
+  servicos: string[];
+  setores: string[];
+  descricaoInstitucional: string;
+  formaPagamento: "cartao" | "boleto" | "pix";
+  website?: string;
+  redeSocial?: string;
+};
+
+export async function registerFornecedor(
+  data: RegisterFornecedorRequest
+): Promise<LoginFornecedorResponse> {
+  return apiClient<LoginFornecedorResponse>("/auth/fornecedor/register", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
 
 export async function loginFornecedor(
   data: LoginFornecedorRequest

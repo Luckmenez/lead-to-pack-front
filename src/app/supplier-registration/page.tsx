@@ -1,5 +1,7 @@
 "use client"
 
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { InterestGroup } from "@/app/buyer-registration/buyer-registration-component/InterestGroup"
@@ -15,9 +17,10 @@ import {
     supplierRegistrationSchema,
 } from "../schemas/supplierRegistration.schema"
 import { ProgressBar } from "@/app/supplier-registration/supplier-registration-component/progressBar"
-import { useRouter } from "next/navigation"
 import { maskCNPJ, maskCPF, maskPhoneComercial, maskPhonePersonal, normalizeEmail } from "@/utils/masks"
 import { PortfolioDropzone } from "@/components/Dropzone"
+import { registerFornecedor } from "@/lib/api/auth.api"
+import { useAuth } from "@/contexts/AuthContext"
 
 export default function SupplierRegistrationPage() {
     const form = useForm<SupplierRegistrationFormData>({
@@ -35,21 +38,44 @@ export default function SupplierRegistrationPage() {
         },
     })
 
+    const router = useRouter()
+    const { loginFornecedor } = useAuth()
+    const [submitError, setSubmitError] = useState<string | null>(null)
+
     const {
         handleSubmit,
         register,
-        watch,
-        setValue,
-        formState: { errors },
+        formState: { errors, isSubmitting },
     } = form
 
-    const router = useRouter()
-
-    const onSubmit = (data: SupplierRegistrationFormData) => {
-        console.log("FORM DATA ETAPA 1:", data)
-        router.push(
-            `/supplier-registration/payment?payment=${data.formaPagamento}`
-        )
+    const onSubmit = async (data: SupplierRegistrationFormData) => {
+        setSubmitError(null)
+        try {
+            const res = await registerFornecedor({
+                cpf: String(data.cpf).replace(/\D/g, ""),
+                senha: data.senha,
+                nomeCompleto: data.nomeCompleto,
+                telefonePessoal: String(data.telefonePessoal).replace(/\D/g, ""),
+                emailPessoal: data.emailPessoal,
+                cnpj: String(data.cnpj).replace(/\D/g, ""),
+                razaoSocial: data.razaoSocial,
+                nomeFantasia: data.nomeFantasia,
+                emailComercial: data.emailComercial,
+                telefoneComercial: String(data.telefoneComercial).replace(/\D/g, ""),
+                categoriasProdutos: data.categoriasProdutos,
+                materiais: data.materiais,
+                servicos: data.servicos,
+                setores: data.setores,
+                descricaoInstitucional: data.descricaoInstitucional,
+                formaPagamento: data.formaPagamento,
+                website: data.website || undefined,
+                redeSocial: data.redeSocial || undefined,
+            })
+            loginFornecedor(res.accessToken, res.fornecedor)
+            router.push(`/supplier-registration/payment?payment=${data.formaPagamento}`)
+        } catch (e) {
+            setSubmitError(e instanceof Error ? e.message : "Erro ao realizar cadastro")
+        }
     }
 
 
@@ -442,12 +468,17 @@ export default function SupplierRegistrationPage() {
                 </div>
                 <hr className="my-8" />
 
+                {submitError && (
+                    <p className="mb-4 text-sm text-red-500">{submitError}</p>
+                )}
+
                 <div className="mt-8 flex justify-center">
                     <Button
                         type="submit"
+                        disabled={isSubmitting}
                         className="rounded-full bg-[#5B86A8] px-10 hover:bg-[#4A748F]"
                     >
-                        Avançar para pagamento
+                        {isSubmitting ? "Cadastrando..." : "Avançar para pagamento"}
                     </Button>
                 </div>
             </form>
