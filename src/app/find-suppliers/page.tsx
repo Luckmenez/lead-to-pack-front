@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { getSuppliers, type SupplierItem } from "@/lib/api/suppliers.api";
 import Link from "next/link";
-import { MagnifyingGlassIcon, CubeIcon, EnvelopeSimpleIcon } from "@phosphor-icons/react";
+import { MagnifyingGlassIcon, EnvelopeSimpleIcon, MapPinIcon, FileTextIcon } from "@phosphor-icons/react";
 
 const CATEGORIAS_PRODUTOS = [
   "Embalagens Primárias",
@@ -20,46 +20,77 @@ function SupplierCard({ supplier }: { supplier: SupplierItem }) {
   const categorias = Array.isArray(supplier.categoriasProdutos)
     ? supplier.categoriasProdutos
     : [];
+  const materiais = Array.isArray(supplier.materiais) ? supplier.materiais : [];
+  const tags = [...new Set([...categorias, ...materiais])].slice(0, 5);
   const descricao =
-    supplier.descricaoInstitucional?.slice(0, 120) +
-    (supplier.descricaoInstitucional?.length > 120 ? "..." : "");
+    supplier.descricaoInstitucional?.slice(0, 180) +
+    (supplier.descricaoInstitucional?.length > 180 ? "..." : "");
+
+  const supplierExt = supplier as SupplierItem & { cidade?: string; estado?: string; arquivos?: { nome: string; url: string }[] };
+  const cidade = supplierExt.cidade;
+  const estado = supplierExt.estado;
+  const arquivos = supplierExt.arquivos ?? [];
 
   return (
-    <article className="flex flex-col rounded-xl border border-gray-200 bg-white p-5 shadow-sm transition hover:shadow-md">
-      <div className="mb-3 flex items-start gap-2">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#EEF6DB]">
-          <CubeIcon size={20} weight="bold" color="#9CCB3B" />
-        </span>
-        <div>
-          <h2 className="font-semibold text-[#0B2443]">{supplier.nomeFantasia}</h2>
-          <span className="mt-1 inline-block rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+    <article className="flex flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md sm:flex-row">
+      <div className="flex flex-1 flex-col gap-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 className="text-lg font-semibold text-[#0B2443]">
+            {supplier.nomeFantasia}
+          </h2>
+          <span className="rounded border border-gray-300 bg-gray-50 px-2 py-0.5 text-xs text-gray-600">
             Empresa Fornecedora
           </span>
         </div>
-      </div>
-      <p className="mb-3 flex-1 text-sm text-muted-foreground">{descricao}</p>
-      {categorias.length > 0 && (
-        <div className="mb-4 flex flex-wrap gap-1">
-          {categorias.slice(0, 4).map((cat) => (
-            <span
-              key={cat}
-              className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700"
-            >
-              {cat}
+
+        <p className="text-sm leading-relaxed text-gray-700">{descricao}</p>
+
+        {(cidade || estado) && (
+          <div className="flex items-center gap-1.5 text-sm text-gray-600">
+            <MapPinIcon size={16} weight="fill" className="text-gray-400" />
+            <span>
+              {[cidade, estado].filter(Boolean).join(", ")}
             </span>
-          ))}
-        </div>
-      )}
-      <div className="mt-auto flex flex-wrap gap-2">
+          </div>
+        )}
+
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {tags.map((tag) => (
+              <span
+                key={tag}
+                className="rounded bg-[#E7EFF5] px-2.5 py-1 text-xs text-[#4F83A6]"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {arquivos.length > 0 ? (
+          <div className="flex flex-wrap gap-4 pt-1">
+            {arquivos.map((arq, i) => (
+              <div key={i} className="flex items-center gap-1.5 text-xs text-gray-600">
+                <FileTextIcon size={14} weight="regular" />
+                <span>{arq.nome}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="min-h-[1.5rem]" data-aria-label="Área preparada para arquivos futuros" />
+        )}
+      </div>
+
+      <div className="mt-4 flex shrink-0 flex-row gap-2 border-t border-gray-100 pt-4 sm:mt-0 sm:ml-6 sm:flex-col sm:border-l sm:border-t-0 sm:pt-0 sm:pl-6">
         <Link
           href={`/supplier/${supplier.id}`}
-          className="cursor-pointer rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="cursor-pointer rounded-lg border border-gray-300 bg-white px-4 py-2 text-center text-sm font-medium text-gray-700 hover:bg-gray-50"
         >
           Visualizar Perfil
         </Link>
         <Link
           href={`/supplier/${supplier.id}/contact`}
-          className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-[#5B86A8] px-4 py-2 text-sm font-medium text-white hover:bg-[#4A748F]"
+          className="flex cursor-pointer items-center justify-center gap-1.5 rounded-lg bg-[#0B2443] px-4 py-2 text-sm font-medium text-white hover:bg-[#0a1e38]"
         >
           <EnvelopeSimpleIcon size={16} weight="bold" />
           Gerar Contato
@@ -177,7 +208,7 @@ export default function FindSuppliersPage() {
           <p className="mb-4 text-sm text-muted-foreground">
             {data.total} fornecedores encontrados
           </p>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="flex flex-col gap-4">
             {data.data.map((supplier) => (
               <SupplierCard key={supplier.id} supplier={supplier} />
             ))}
