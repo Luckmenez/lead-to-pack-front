@@ -1,0 +1,28 @@
+---
+description: Usar skills Next.js em .agents/skills/next-best-practices ao escrever/revisar código Next.js
+globs: "**/app/**/*.{ts,tsx},**/components/**/*.{ts,tsx},**/*next*"
+alwaysApply: false
+---
+
+# Next.js — Usar skills em .agents/skills/next-best-practices
+
+Ao escrever ou revisar código Next.js neste projeto, use como referência os arquivos em **`.agents/skills/next-best-practices/`**:
+
+- **SKILL.md** — Índice e visão geral.
+- **file-conventions.md** — Estrutura do app/, arquivos especiais, segmentos dinâmicos, route groups.
+- **rsc-boundaries.md** — Server vs Client: componentes async em client, props não serializáveis, Server Actions.
+- **async-patterns.md** — params/searchParams/cookies/headers assíncronos (Next 15+).
+- **suspense-boundaries.md** — `useSearchParams`/`usePathname` exigem `<Suspense>` em rotas estáticas.
+- **functions.md** — Hooks de navegação, funções de servidor, generateStaticParams/generateMetadata.
+- **error-handling.md** — error.tsx, not-found.tsx, redirect, notFound(), forbidden/unauthorized.
+- **data-patterns.md** — Server Components vs Server Actions vs Route Handlers, evitar waterfalls.
+- **route-handlers.md** — route.ts, conflitos com page.tsx, quando usar vs Server Actions.
+- **metadata.md** — Metadados estáticos/dinâmicos, generateMetadata, OG images.
+- **image.md** — next/image, sizes, blur placeholders, imagens remotas.
+- **font.md** — next/font, Google/local fonts, Tailwind.
+- **directives.md** — 'use client', 'use server', 'use cache'.
+- **hydration-error.md** — Causas comuns e como corrigir.
+- **parallel-routes.md** — Modais com @slot e intercepting routes.
+- **bundling.md**, **runtime-selection.md**, **scripts.md**, **self-hosting.md**, **debug-tricks.md** — Conforme relevante.
+
+Leia o arquivo correspondente ao tópico em que está trabalhando para seguir as melhores práticas e exemplos de código desses guias.
