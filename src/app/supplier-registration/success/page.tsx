@@ -1,5 +1,6 @@
 "use client"
 
+import { Suspense } from "react"
 import { Button } from "@/components/ui/button"
 import { ProgressBar } from "@/app/supplier-registration/supplier-registration-component/progressBar"
 import { useSearchParams, useRouter } from "next/navigation"
@@ -7,7 +8,7 @@ import { paymentConfig, PaymentMethod } from "../payment/payment.config"
 import { ArrowLeftIcon, CubeIcon } from "@phosphor-icons/react"
 import Link from "next/link"
 
-export default function SupplierSuccessPage() {
+function SupplierSuccessContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -109,5 +110,48 @@ export default function SupplierSuccessPage() {
         </div>
       </section>
     </main>
+  )
+}
+
+function SuccessFallback() {
+  return (
+    <main>
+      <div className="mx-auto max-w-6xl px-6 py-10">
+        <ProgressBar step={3} />
+        <div className="mb-6 flex justify-end">
+          <Link
+            href="/choose-profile"
+            className="flex items-center gap-2 rounded-full bg-[#E7EFF5] px-4 py-1.5 text-sm font-medium text-[#4F83A6] hover:bg-[#dbe7f0]"
+          >
+            <ArrowLeftIcon size={14} weight="bold" />
+            Voltar
+          </Link>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EEF6DB]">
+            <CubeIcon size={20} weight="bold" color="#9CCB3B" />
+          </span>
+          <div>
+            <h1 className="text-xl font-semibold">Cadastro Fornecedor</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Preencha os dados da sua empresa para começar a buscar fornecedores.
+            </p>
+          </div>
+        </div>
+      </div>
+      <section className="bg-[#F7F8FA] py-14">
+        <div className="mx-auto max-w-6xl px-6 text-center">
+          <p className="text-sm text-muted-foreground">Carregando...</p>
+        </div>
+      </section>
+    </main>
+  )
+}
+
+export default function SupplierSuccessPage() {
+  return (
+    <Suspense fallback={<SuccessFallback />}>
+      <SupplierSuccessContent />
+    </Suspense>
   )
 }

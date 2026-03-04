@@ -14,9 +14,7 @@ export function Header() {
     user?.tipo === "comprador"
       ? user.nomeCompleto
       : user?.tipo === "fornecedor"
-        ? "nomeFantasia" in user
-          ? user.nomeFantasia
-          : user.nomeCompleto
+        ? user.nomeFantasia
         : null;
 
   const handleLogout = () => {
@@ -41,8 +39,14 @@ export function Header() {
         {isAuthenticated && displayName && (
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <UserCircleIcon size={28} weight="fill" className="text-[#4F83A6]" />
-              <span className="text-sm font-medium text-[#0B2443]">{displayName}</span>
+              <UserCircleIcon
+                size={28}
+                weight="fill"
+                className="text-[#4F83A6]"
+              />
+              <span className="text-sm font-medium text-[#0B2443]">
+                {displayName}
+              </span>
             </div>
             <button
               type="button"

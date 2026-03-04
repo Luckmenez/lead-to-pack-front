@@ -1,5 +1,6 @@
 "use client"
 
+import { Suspense } from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowLeftIcon, CreditCardIcon } from "@phosphor-icons/react"
 import Link from "next/link"
@@ -7,7 +8,7 @@ import { ProgressBar } from "@/app/supplier-registration/supplier-registration-c
 import { useSearchParams, useRouter } from "next/navigation"
 import { paymentConfig, PaymentMethod } from "./payment.config"
 
-export default function SupplierPaymentPage() {
+function SupplierPaymentContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -107,5 +108,29 @@ export default function SupplierPaymentPage() {
         </div>
       </section>
     </main>
+  )
+}
+
+export default function SupplierPaymentPage() {
+  return (
+    <Suspense fallback={
+      <main className="w-full">
+        <div className="mx-auto max-w-6xl px-6 py-10">
+          <ProgressBar step={2} />
+          <div className="mb-6 flex justify-end">
+            <Link href="/supplier-registration" className="flex items-center gap-2 rounded-full bg-[#E7EFF5] px-4 py-1.5 text-sm font-medium text-[#4F83A6] hover:bg-[#dbe7f0]">
+              <ArrowLeftIcon size={14} weight="bold" />
+              Voltar
+            </Link>
+          </div>
+          <section className="mb-10 text-center">
+            <h1 className="text-xl font-semibold">Finalize seu Cadastro com o Pagamento</h1>
+            <p className="mt-1 text-sm text-muted-foreground">Carregando...</p>
+          </section>
+        </div>
+      </main>
+    }>
+      <SupplierPaymentContent />
+    </Suspense>
   )
 }

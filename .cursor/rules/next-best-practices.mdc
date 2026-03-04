@@ -1,0 +1,87 @@
+---
+description: Next.js best practices — App Router, performance, security, useSearchParams/Suspense
+globs: "**/app/**/*.{ts,tsx},**/components/**/*.{ts,tsx},**/lib/**/*.ts"
+alwaysApply: false
+---
+
+# Next.js Best Practices
+
+Siga estas práticas ao trabalhar neste projeto Next.js (App Router).
+
+## Estrutura (app/)
+
+- **Pages:** `page.tsx` — UI da rota.
+- **Layouts:** `layout.tsx` — layout da rota e filhos.
+- **Loading:** `loading.tsx` — UI de carregamento (skeleton) do segmento.
+- **Erros:** `error.tsx` — tratamento de erro do segmento.
+- **API:** `route.ts` — handlers de API no segmento.
+- **Rotas dinâmicas:** `[slug]` ou `[id]`.
+
+Prefira organização por feature; mantenha pastas relativamente planas.
+
+## Server vs Client
+
+- Use **Server Components** por padrão (menos JS no cliente).
+- Use **"use client"** só quando precisar de: `useState`, `useEffect`, event handlers, `useSearchParams()`, hooks do cliente ou libs que dependem do browser.
+
+## useSearchParams() e prerender
+
+- `useSearchParams()` depende da URL (só existe no cliente). O Next.js exige que o componente que o usa esteja dentro de um **Suspense boundary** para o build (prerender) não falhar.
+- Padrão: extrair o conteúdo que usa `useSearchParams()` para um componente filho e envolver com `<Suspense fallback={…}>` na page.
+
+```tsx
+// ✅ Correto
+function PageContent() {
+  const sp = useSearchParams()
+  return <div>{sp.get("q")}</div>
+}
+export default function Page() {
+  return (
+    <Suspense fallback={<Skeleton />}>
+      <PageContent />
+    </Suspense>
+  )
+}
+```
+
+## Data fetching
+
+- No App Router: buscar dados em Server Components (async) ou em `route.ts` para API.
+- No cliente: use libs como SWR ou React Query para cache e revalidação.
+- Evite expor segredos ou lógica sensível em Client Components.
+
+## Imagens e performance
+
+- Use `next/image` para otimização, lazy load e tamanhos responsivos.
+- Use `next/font` para fontes sem layout shift.
+
+## Formulários e validação
+
+- Use `react-hook-form` + validação (ex.: Zod) para formulários.
+- Validar sempre no servidor; validação no cliente é para UX, não para segurança.
+
+## Segurança
+
+- Nunca coloque API keys ou segredos em código que rode no cliente. Use variáveis de ambiente (sem `NEXT_PUBLIC_` para segredos).
+- Validar e sanitizar entrada no servidor; não confie só na validação do cliente.
+
+## Erros e loading
+
+- Crie `error.tsx` nos segmentos que precisam de tratamento de erro específico.
+- Crie `loading.tsx` com skeleton/loading para rotas assíncronas.
+
+## Nomenclatura
+
+- Componentes: `PascalCase.tsx`
+- Pages: `page.tsx`
+- Layouts: `layout.tsx`
+- API routes: `route.ts`
+- Hooks: `useNomeDoHook.ts`
+
+## Anti-patterns a evitar
+
+- Escrever código de servidor (acesso a secrets, DB) em Client Components.
+- Usar `useSearchParams()` sem envolver em `<Suspense>`.
+- Não usar `next/image` para imagens (impacto em performance).
+- Mutar state diretamente; usar sempre setState/hooks.
+- `useEffect` com array de dependências incompleto ou incorreto.
