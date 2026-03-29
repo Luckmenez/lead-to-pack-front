@@ -1,20 +1,15 @@
 import { z } from "zod"
 
 export const supplierRegistrationSchema = z.object({
-    cpf: z
-        .string()
-        .transform(v => v.replace(/\D/g, ""))
-        .refine(v => v.length === 11, "CPF inválido"),
-
-    nomeCompleto: z.string().min(3, "Informe seu nome completo"),
-
-    telefonePessoal: z
+    telefone: z
         .string().min(10, "Telefone inválido")
         .transform(v => v.replace(/\D/g, "")),
 
+    whatsapp: z
+        .string().min(10, "WhatsApp inválido")
+        .transform(v => v.replace(/\D/g, "")),
 
-    emailPessoal: z.string().email({ message: "Informe um E-mail válido" }),
-    emailComercial: z.string().email({ message: "Informe um E-mail comercial valido" }),
+    email: z.string().email({ message: "Informe um E-mail válido" }),
 
     cnpj: z
         .string()
@@ -27,20 +22,22 @@ export const supplierRegistrationSchema = z.object({
 
     website: z
         .string()
-        .min(1, "Informe o site")
-        .regex(/^https?:\/\//, "Informe uma URL válida"),
+        .refine(v => !v || /^https?:\/\//.test(v), "Informe uma URL válida")
+        .optional()
+        .or(z.literal("")),
 
     redeSocial: z
         .string()
-        .min(3, "Informe uma rede social válida"),
+        .optional()
+        .or(z.literal("")),
 
     cidade: z.string().min(2, "Informe a cidade"),
     estado: z.string().min(2, "Selecione o estado"),
 
-    telefoneComercial: z
-        .string().min(10, "Telefone inválido")
-        .transform(v => v.replace(/\D/g, "")),
+    tipoInscricao: z.enum(["estadual", "municipal"], { message: "Selecione o tipo de inscrição" }),
+    numeroInscricao: z.string().min(1, "Informe o número de inscrição"),
 
+    tipoEmpresa: z.enum(["mei", "lucro_presumido", "simples_nacional"], { message: "Selecione o tipo de empresa" }),
 
     categoriasProdutos: z.array(z.string()).min(1, "Selecione ao menos 1 Produto"),
     materiais: z.array(z.string()).min(1, "Selecione ao menos 1 material"),
@@ -50,7 +47,7 @@ export const supplierRegistrationSchema = z.object({
     descricaoInstitucional: z
         .string({ message: "Campo obrigatório" })
         .min(30, "Mínimo de 30 caracteres")
-        .max(300),
+        .max(500),
 
     portfolio: z
         .array(z.instanceof(File))
