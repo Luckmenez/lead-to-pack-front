@@ -6,7 +6,6 @@ export const PROF_REGISTRATION_CATEGORIES = {
     "Metal",
     "Alumínio",
     "Madeira",
-    "Papel",
     "Papel cartão",
     "Papelão ondulado",
     "Vidro",

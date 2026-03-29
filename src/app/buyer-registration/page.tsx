@@ -48,11 +48,13 @@ export default function BuyerRegistrationPage() {
   const onSubmit = async (data: BuyerRegistrationFormData) => {
     setSubmitError(null);
     try {
+      const whatsappDigits = String(data.whatsapp).replace(/\D/g, "");
       const res = await registerComprador({
         senha: data.senha,
         nomeCompleto: data.nomeCompleto,
         telefonePessoal: String(data.telefonePessoal).replace(/\D/g, ""),
-        whatsapp: String(data.whatsapp).replace(/\D/g, ""),
+        whatsappPessoal: whatsappDigits,
+        whatsappComercial: whatsappDigits,
         email: data.email,
         cnpj: String(data.cnpj).replace(/\D/g, ""),
         razaoSocial: data.razaoSocial,

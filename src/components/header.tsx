@@ -15,7 +15,9 @@ export function Header() {
       ? user.nomeCompleto
       : user?.tipo === "fornecedor"
         ? user.nomeFantasia
-        : null;
+        : user?.tipo === "profissional"
+          ? user.apelido
+          : null;
 
   const handleLogout = () => {
     logout();
@@ -26,7 +28,13 @@ export function Header() {
     <header className="w-full shrink-0 bg-white px-8 py-4 shadow-[0_3px_10px_rgba(0,0,0,0.18)]">
       <div className="flex items-center justify-between">
         <Link
-          href={user?.tipo === "comprador" ? "/find-suppliers" : "/"}
+          href={
+            user?.tipo === "comprador"
+              ? "/find-suppliers"
+              : user?.tipo === "fornecedor" || user?.tipo === "profissional"
+                ? "/find-buyers"
+                : "/"
+          }
           className="relative h-12 w-48 cursor-pointer"
         >
           <Image

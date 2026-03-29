@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { EyeIcon, EyeSlashIcon, LockIcon, IdentificationCard } from "@phosphor-icons/react"
+import { EyeIcon, EyeSlashIcon, LockIcon, EnvelopeSimple } from "@phosphor-icons/react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,11 +15,9 @@ import {
     LoginCompradorFormData,
     loginCompradorSchema,
 } from "@/app/schemas/loginComprador.schema"
-import { maskCPFOrCNPJ } from "@/utils/masks"
-
 export function LoginForm() {
     const router = useRouter()
-    const { loginComprador, loginFornecedor } = useAuth()
+    const { loginComprador, loginFornecedor, loginProfissional } = useAuth()
     const [showPassword, setShowPassword] = useState(false)
     const [submitError, setSubmitError] = useState<string | null>(null)
 
@@ -27,22 +25,24 @@ export function LoginForm() {
         register,
         handleSubmit,
         formState: { errors, isSubmitting },
-        setValue,
     } = useForm<LoginCompradorFormData>({
         resolver: zodResolver(loginCompradorSchema),
-        defaultValues: { document: "", senha: "" },
+        defaultValues: { email: "", senha: "" },
     })
 
     const onSubmit = async (data: LoginCompradorFormData) => {
         setSubmitError(null)
         try {
-            const res = await login({ cpf: data.document, senha: data.senha })
+            const res = await login({ email: data.email.trim(), senha: data.senha })
             if (res.tipo === "comprador" && res.comprador) {
                 loginComprador(res.accessToken, res.comprador)
                 router.push("/find-suppliers")
             } else if (res.tipo === "fornecedor" && res.fornecedor) {
                 loginFornecedor(res.accessToken, res.fornecedor)
-                router.push("/")
+                router.push("/find-buyers")
+            } else if (res.tipo === "profissional" && res.profissional) {
+                loginProfissional(res.accessToken, res.profissional)
+                router.push("/find-buyers")
             }
         } catch (e) {
             setSubmitError(e instanceof Error ? e.message : "Erro ao fazer login")
@@ -77,30 +77,23 @@ export function LoginForm() {
                         <div className="grid grid-cols-1 items-center gap-4 sm:grid-cols-[1fr_1fr_auto] sm:gap-3">
                             <div className="min-w-0">
                                 <div className="relative">
-                                    <IdentificationCard
+                                    <EnvelopeSimple
                                         size={18}
                                         weight="fill"
                                         className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                                     />
                                     <Input
-                                        placeholder="Documento (CPF ou CNPJ)"
-                                        aria-label="Documento (CPF ou CNPJ)"
+                                        type="email"
+                                        autoComplete="email"
+                                        placeholder="E-mail"
+                                        aria-label="E-mail"
                                         className="pl-10 border border-gray-300 bg-white/95 focus:border-[#5B86A8]"
-                                        {...register("document", {
-                                            onChange: (e) =>
-                                                setValue(
-                                                    "document",
-                                                    maskCPFOrCNPJ(e.target.value),
-                                                    {
-                                                        shouldValidate: true,
-                                                    }
-                                                ),
-                                        })}
+                                        {...register("email")}
                                     />
                                 </div>
-                                {errors.document && (
+                                {errors.email && (
                                     <p className="mt-1 text-xs text-red-500">
-                                        {errors.document.message}
+                                        {errors.email.message}
                                     </p>
                                 )}
                             </div>

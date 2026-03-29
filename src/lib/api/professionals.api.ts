@@ -1,36 +1,36 @@
 import { apiClient } from "./client";
 
-export type SupplierItem = {
+export type ProfessionalItem = {
   id: string;
-  nomeFantasia: string;
+  nomeCompleto: string;
+  apelido: string;
   descricaoInstitucional: string;
   categoriasProdutos: string[];
   materiais: string[];
   servicos: string[];
   setores: string[];
-  cidade?: string;
-  estado?: string;
+  website?: string | null;
+  redeSocial?: string | null;
 };
 
-export type GetSuppliersParams = {
+export type GetProfessionalsParams = {
   page?: number;
   limit?: number;
   search?: string;
-  /** Material cadastrado (lista alinhada ao catálogo de cadastro). */
   material?: string;
 };
 
-export type GetSuppliersResponse = {
-  data: SupplierItem[];
+export type GetProfessionalsResponse = {
+  data: ProfessionalItem[];
   total: number;
   page: number;
   limit: number;
   totalPages: number;
 };
 
-export async function getSuppliers(
-  params: GetSuppliersParams = {}
-): Promise<GetSuppliersResponse> {
+export async function getProfessionals(
+  params: GetProfessionalsParams = {}
+): Promise<GetProfessionalsResponse> {
   const searchParams = new URLSearchParams();
   if (params.page != null) searchParams.set("page", String(params.page));
   if (params.limit != null) searchParams.set("limit", String(params.limit));
@@ -38,7 +38,7 @@ export async function getSuppliers(
   if (params.material) searchParams.set("material", params.material);
 
   const query = searchParams.toString();
-  const path = `/fornecedores${query ? `?${query}` : ""}`;
+  const path = `/profissionais${query ? `?${query}` : ""}`;
 
-  return apiClient<GetSuppliersResponse>(path);
+  return apiClient<GetProfessionalsResponse>(path);
 }
