@@ -21,12 +21,11 @@ export type RegisterCompradorRequest = {
   senha: string;
   nomeCompleto: string;
   telefonePessoal: string;
-  whatsappPessoal: string;
+  whatsapp: string;
   email: string;
   cnpj: string;
   razaoSocial: string;
   telefoneComercial: string;
-  whatsappComercial: string;
   nomeFantasia?: string;
   website?: string;
   redeSocial?: string;
