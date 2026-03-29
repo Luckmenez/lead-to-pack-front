@@ -1,22 +1,17 @@
 import { z } from "zod"
 
 export const buyerRegistrationSchema = z.object({
-  cpf: z
-    .string()
-    .min(11, "CPF é obrigatório")
-    .regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, "CPF inválido"),
-
   nomeCompleto: z
     .string()
     .min(3, "Nome completo é obrigatório"),
 
+  email: z
+    .string()
+    .email("E-mail inválido"),
+
   telefonePessoal: z
     .string()
     .min(10, "Telefone pessoal é obrigatório"),
-
-  emailPessoal: z
-    .string()
-    .email("E-mail pessoal inválido"),
 
   cnpj: z
     .string()
@@ -24,24 +19,25 @@ export const buyerRegistrationSchema = z.object({
 
   razaoSocial: z.string().min(3, "Informe a Razão Social"),
 
-  nomeFantasia: z.string().min(2, "Informe o nome fantasia"),
+  nomeFantasia: z.string().min(2, "Informe o nome fantasia").optional(),
 
   website: z
     .string()
-    .min(1, "Informe o site")
-    .regex(/^https?:\/\//, "Informe uma URL válida"),
+    .regex(/^https?:\/\//, "Informe uma URL válida")
+    .optional()
+    .or(z.literal("")),
 
   redeSocial: z
     .string()
-    .min(3, "Informe uma rede social válida"),
-
-  emailComercial: z
-    .string()
-    .email("E-mail comercial inválido"),
+    .optional(),
 
   telefoneComercial: z
     .string()
     .min(10, "Telefone comercial é obrigatório"),
+
+  whatsapp: z
+    .string()
+    .min(10, "WhatsApp é obrigatório"),
 
   senha: z
     .string()

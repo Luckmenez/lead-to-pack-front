@@ -9,14 +9,13 @@ import { EyeIcon, EyeSlashIcon, LockIcon, IdentificationCard } from "@phosphor-i
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { useAuth } from "@/contexts/AuthContext"
 import { login } from "@/lib/api/auth.api"
 import {
     LoginCompradorFormData,
     loginCompradorSchema,
 } from "@/app/schemas/loginComprador.schema"
-import { maskCPF } from "@/utils/masks"
+import { maskCPFOrCNPJ } from "@/utils/masks"
 
 export function LoginForm() {
     const router = useRouter()
@@ -31,13 +30,13 @@ export function LoginForm() {
         setValue,
     } = useForm<LoginCompradorFormData>({
         resolver: zodResolver(loginCompradorSchema),
-        defaultValues: { cpf: "", senha: "" },
+        defaultValues: { document: "", senha: "" },
     })
 
     const onSubmit = async (data: LoginCompradorFormData) => {
         setSubmitError(null)
         try {
-            const res = await login({ cpf: data.cpf, senha: data.senha })
+            const res = await login({ cpf: data.document, senha: data.senha })
             if (res.tipo === "comprador" && res.comprador) {
                 loginComprador(res.accessToken, res.comprador)
                 router.push("/find-suppliers")
@@ -69,15 +68,14 @@ export function LoginForm() {
                 />
             </div>
 
-            <div className="relative mx-auto max-w-6xl px-6 py-16">
-                <div className="ml-auto max-w-xl p-6">
+            <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6">
+                <div className="ml-auto w-full max-w-2xl p-4 sm:max-w-3xl sm:p-6">
                     <form
                         onSubmit={handleSubmit(onSubmit)}
                         className="space-y-4"
                     >
-                        <div className="grid grid-cols-[240px_240px_300px] items-end gap-4">
-                            <div>
-                                <Label className="pb-2">CPF</Label>
+                        <div className="grid grid-cols-1 items-center gap-4 sm:grid-cols-[1fr_1fr_auto] sm:gap-3">
+                            <div className="min-w-0">
                                 <div className="relative">
                                     <IdentificationCard
                                         size={18}
@@ -85,13 +83,14 @@ export function LoginForm() {
                                         className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                                     />
                                     <Input
-                                        placeholder="000.000.000-00"
+                                        placeholder="Documento (CPF ou CNPJ)"
+                                        aria-label="Documento (CPF ou CNPJ)"
                                         className="pl-10 border border-gray-300 bg-white/95 focus:border-[#5B86A8]"
-                                        {...register("cpf", {
+                                        {...register("document", {
                                             onChange: (e) =>
                                                 setValue(
-                                                    "cpf",
-                                                    maskCPF(e.target.value),
+                                                    "document",
+                                                    maskCPFOrCNPJ(e.target.value),
                                                     {
                                                         shouldValidate: true,
                                                     }
@@ -99,15 +98,14 @@ export function LoginForm() {
                                         })}
                                     />
                                 </div>
-                                {errors.cpf && (
+                                {errors.document && (
                                     <p className="mt-1 text-xs text-red-500">
-                                        {errors.cpf.message}
+                                        {errors.document.message}
                                     </p>
                                 )}
                             </div>
 
-                            <div>
-                                <Label className="pb-2">Senha</Label>
+                            <div className="min-w-0">
                                 <div className="relative">
                                     <LockIcon
                                         size={18}
@@ -135,6 +133,7 @@ export function LoginForm() {
                                     <Input
                                         type={showPassword ? "text" : "password"}
                                         placeholder="Senha"
+                                        aria-label="Senha"
                                         className="pl-10 pr-10 border border-gray-300 bg-white/95 focus:border-[#5B86A8]"
                                         {...register("senha")}
                                     />
@@ -148,7 +147,7 @@ export function LoginForm() {
                             <Button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="h-10 w-66 rounded-full bg-[#5B86A8] font-semibold hover:bg-[#4A748F] cursor-pointer disabled:opacity-70"
+                                className="h-10 min-w-[120px] shrink-0 rounded-full bg-[#5B86A8] font-semibold hover:bg-[#4A748F] cursor-pointer disabled:opacity-70 sm:min-w-[140px]"
                             >
                                 {isSubmitting ? "Entrando..." : "Entrar"}
                             </Button>
@@ -161,7 +160,7 @@ export function LoginForm() {
                         )}
 
                         <div className="mt-4 flex justify-end">
-                            <div className="w-[300px] text-right">
+                            <div className="w-full max-w-[300px] text-right sm:w-[300px]">
                                 <a href="#" className="cursor-pointer text-sm text-blue-600 hover:underline">
                                     Esqueci a senha
                                 </a>

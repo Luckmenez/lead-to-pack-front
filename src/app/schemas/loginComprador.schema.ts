@@ -1,10 +1,21 @@
 import { z } from "zod";
 
+const cpfRegex = /^\d{3}\.\d{3}\.\d{3}-\d{2}$/;
+const cnpjRegex = /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/;
+
 export const loginCompradorSchema = z.object({
-  cpf: z
+  document: z
     .string()
-    .min(11, "CPF é obrigatório")
-    .regex(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/, "CPF inválido"),
+    .min(1, "Documento é obrigatório")
+    .refine(
+      (val) => {
+        const digits = val.replace(/\D/g, "");
+        if (digits.length === 11) return cpfRegex.test(val);
+        if (digits.length === 14) return cnpjRegex.test(val);
+        return false;
+      },
+      { message: "Documento inválido (informe CPF ou CNPJ)" }
+    ),
 
   senha: z
     .string()

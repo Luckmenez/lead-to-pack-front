@@ -32,15 +32,15 @@ Prefira organização por feature; mantenha pastas relativamente planas.
 ```tsx
 // ✅ Correto
 function PageContent() {
-  const sp = useSearchParams()
-  return <div>{sp.get("q")}</div>
+  const sp = useSearchParams();
+  return <div>{sp.get("q")}</div>;
 }
 export default function Page() {
   return (
     <Suspense fallback={<Skeleton />}>
       <PageContent />
     </Suspense>
-  )
+  );
 }
 ```
 
