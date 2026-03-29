@@ -18,15 +18,15 @@ export type LoginCompradorResponse = {
 };
 
 export type RegisterCompradorRequest = {
-  cpf: string;
   senha: string;
   nomeCompleto: string;
   telefonePessoal: string;
-  emailPessoal: string;
+  whatsappPessoal: string;
+  email: string;
   cnpj: string;
   razaoSocial: string;
-  emailComercial: string;
   telefoneComercial: string;
+  whatsappComercial: string;
   nomeFantasia?: string;
   website?: string;
   redeSocial?: string;
@@ -80,16 +80,13 @@ export type LoginFornecedorResponse = {
 };
 
 export type RegisterFornecedorRequest = {
-  cpf: string;
   senha: string;
-  nomeCompleto: string;
-  telefonePessoal: string;
-  emailPessoal: string;
+  telefone: string;
+  whatsapp: string;
+  email: string;
   cnpj: string;
   razaoSocial: string;
   nomeFantasia: string;
-  emailComercial: string;
-  telefoneComercial: string;
   categoriasProdutos: string[];
   materiais: string[];
   servicos: string[];
@@ -98,6 +95,9 @@ export type RegisterFornecedorRequest = {
   formaPagamento: "cartao" | "boleto" | "pix";
   cidade: string;
   estado: string;
+  tipoInscricao: "estadual" | "municipal";
+  numeroInscricao: string;
+  tipoEmpresa: "mei" | "lucro_presumido" | "simples_nacional";
   website?: string;
   redeSocial?: string;
 };
@@ -115,6 +115,45 @@ export async function loginFornecedor(
   data: LoginFornecedorRequest
 ): Promise<LoginFornecedorResponse> {
   return apiClient<LoginFornecedorResponse>("/auth/fornecedor/login", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export type RegisterProfissionalRequest = {
+  cpf: string;
+  senha: string;
+  nomeCompleto: string;
+  apelido: string;
+  telefonePessoal: string;
+  whatsappPessoal: string;
+  emailPessoal: string;
+  categoriasProdutos: string[];
+  materiais: string[];
+  servicos: string[];
+  setores: string[];
+  descricaoInstitucional: string;
+  formaPagamento: "cartao" | "boleto" | "pix";
+  website?: string;
+  redeSocial?: string;
+};
+
+export type ProfissionalUser = {
+  id: string;
+  nomeCompleto: string;
+  cpf: string;
+  emailPessoal: string;
+};
+
+export type LoginProfissionalResponse = {
+  accessToken: string;
+  profissional: ProfissionalUser;
+};
+
+export async function registerProfissional(
+  data: RegisterProfissionalRequest
+): Promise<LoginProfissionalResponse> {
+  return apiClient<LoginProfissionalResponse>("/auth/profissional/register", {
     method: "POST",
     body: JSON.stringify(data),
   });
