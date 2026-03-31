@@ -7,15 +7,22 @@ import {
   useEffect,
   useState,
 } from "react"
-import type { CompradorUser, FornecedorUser } from "@/lib/api/auth.api"
+import type {
+  CompradorUser,
+  FornecedorUser,
+  ProfissionalUser,
+} from "@/lib/api/auth.api"
 
 const TOKEN_KEY = "lead2pack_token"
 const USER_KEY = "lead2pack_user"
 const TIPO_KEY = "lead2pack_tipo"
 
-export type PersonaTipo = "comprador" | "fornecedor"
+export type PersonaTipo = "comprador" | "fornecedor" | "profissional"
 
-export type AuthUser = (CompradorUser & { tipo: "comprador" }) | (FornecedorUser & { tipo: "fornecedor" })
+export type AuthUser =
+  | (CompradorUser & { tipo: "comprador" })
+  | (FornecedorUser & { tipo: "fornecedor" })
+  | (ProfissionalUser & { tipo: "profissional" })
 
 type AuthState = {
   token: string | null
@@ -27,6 +34,7 @@ type AuthState = {
 type AuthContextValue = AuthState & {
   loginComprador: (token: string, comprador: CompradorUser) => void
   loginFornecedor: (token: string, fornecedor: FornecedorUser) => void
+  loginProfissional: (token: string, profissional: ProfissionalUser) => void
   logout: () => void
 }
 
@@ -95,10 +103,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
   }, [])
 
+  const loginProfissional = useCallback(
+    (token: string, profissional: ProfissionalUser) => {
+      const user: AuthUser = { ...profissional, tipo: "profissional" }
+      localStorage.setItem(TOKEN_KEY, token)
+      localStorage.setItem(USER_KEY, JSON.stringify(profissional))
+      localStorage.setItem(TIPO_KEY, "profissional")
+      setState({
+        token,
+        user,
+        isLoading: false,
+        isAuthenticated: true,
+      })
+    },
+    []
+  )
+
   const value: AuthContextValue = {
     ...state,
     loginComprador,
     loginFornecedor,
+    loginProfissional,
     logout,
   }
 

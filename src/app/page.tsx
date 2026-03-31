@@ -12,6 +12,11 @@ export default function Home() {
     if (isLoading) return;
     if (user?.tipo === "comprador") {
       router.replace("/find-suppliers");
+    } else if (
+      user?.tipo === "fornecedor" ||
+      user?.tipo === "profissional"
+    ) {
+      router.replace("/find-buyers");
     } else {
       router.replace("/choose-profile");
     }

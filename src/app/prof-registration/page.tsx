@@ -64,8 +64,8 @@ export default function ProfRegistrationPage() {
                 setores: data.setores,
                 descricaoInstitucional: data.descricaoInstitucional,
                 formaPagamento: data.formaPagamento,
-                website: data.website || undefined,
-                redeSocial: data.redeSocial || undefined,
+                website: data.website || "",
+                redeSocial: data.redeSocial || "",
             })
             router.push(`/prof-registration/payment?payment=${data.formaPagamento}`)
         } catch (e) {

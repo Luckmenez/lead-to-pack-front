@@ -48,18 +48,21 @@ export default function BuyerRegistrationPage() {
   const onSubmit = async (data: BuyerRegistrationFormData) => {
     setSubmitError(null);
     try {
+      const whatsappDigits = String(data.whatsapp).replace(/\D/g, "");
+      const telefoneDigits = String(data.telefone).replace(/\D/g, "");
       const res = await registerComprador({
         senha: data.senha,
         nomeCompleto: data.nomeCompleto,
-        telefonePessoal: String(data.telefonePessoal).replace(/\D/g, ""),
-        whatsapp: String(data.whatsapp).replace(/\D/g, ""),
+        telefonePessoal: telefoneDigits,
+        whatsappPessoal: whatsappDigits,
+        whatsappComercial: whatsappDigits,
         email: data.email,
         cnpj: String(data.cnpj).replace(/\D/g, ""),
         razaoSocial: data.razaoSocial,
         nomeFantasia: data.nomeFantasia || undefined,
-        telefoneComercial: String(data.telefoneComercial).replace(/\D/g, ""),
-        website: data.website || undefined,
-        redeSocial: data.redeSocial || undefined,
+        telefoneComercial: telefoneDigits,
+        website: data.website || "",
+        redeSocial: data.redeSocial || "",
       });
       loginComprador(res.accessToken, res.comprador);
       router.push("/find-suppliers");
@@ -158,21 +161,12 @@ export default function BuyerRegistrationPage() {
           />
 
           <FormField
-            label="Telefone pessoal*"
+            label="Telefone*"
             placeholder="(11) 3333-3333"
-            name="telefonePessoal"
+            name="telefone"
             register={register}
-            error={errors.telefonePessoal?.message}
+            error={errors.telefone?.message}
             onChangeCustom={maskPhonePersonal}
-          />
-
-          <FormField
-            label="Telefone comercial*"
-            placeholder="(11) 3333-3333"
-            name="telefoneComercial"
-            register={register}
-            error={errors.telefoneComercial?.message}
-            onChangeCustom={maskPhoneComercial}
           />
 
           <FormField

@@ -1,15 +1,14 @@
 import { apiClient } from "./client";
 
 export type LoginCompradorRequest = {
-  cpf: string;
+  email: string;
   senha: string;
 };
 
 export type CompradorUser = {
   id: string;
   nomeCompleto: string;
-  cpf: string;
-  emailPessoal: string;
+  email: string;
 };
 
 export type LoginCompradorResponse = {
@@ -21,7 +20,8 @@ export type RegisterCompradorRequest = {
   senha: string;
   nomeCompleto: string;
   telefonePessoal: string;
-  whatsapp: string;
+  whatsappPessoal: string;
+  whatsappComercial: string;
   email: string;
   cnpj: string;
   razaoSocial: string;
@@ -49,17 +49,6 @@ export async function loginComprador(
   });
 }
 
-export type LoginResponse =
-  | (LoginCompradorResponse & { tipo: "comprador" })
-  | (LoginFornecedorResponse & { tipo: "fornecedor" });
-
-export async function login(data: LoginCompradorRequest): Promise<LoginResponse> {
-  return apiClient<LoginResponse>("/auth/login", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-
 export type LoginFornecedorRequest = {
   cpf: string;
   senha: string;
@@ -67,9 +56,7 @@ export type LoginFornecedorRequest = {
 
 export type FornecedorUser = {
   id: string;
-  nomeCompleto: string;
-  cpf: string;
-  emailPessoal: string;
+  email: string;
   nomeFantasia: string;
 };
 
@@ -140,7 +127,7 @@ export type RegisterProfissionalRequest = {
 export type ProfissionalUser = {
   id: string;
   nomeCompleto: string;
-  cpf: string;
+  apelido: string;
   emailPessoal: string;
 };
 
@@ -148,6 +135,18 @@ export type LoginProfissionalResponse = {
   accessToken: string;
   profissional: ProfissionalUser;
 };
+
+export type LoginResponse =
+  | (LoginCompradorResponse & { tipo: "comprador" })
+  | (LoginFornecedorResponse & { tipo: "fornecedor" })
+  | (LoginProfissionalResponse & { tipo: "profissional" });
+
+export async function login(data: LoginCompradorRequest): Promise<LoginResponse> {
+  return apiClient<LoginResponse>("/auth/login", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
 
 export async function registerProfissional(
   data: RegisterProfissionalRequest
