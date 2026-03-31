@@ -9,9 +9,9 @@ export const buyerRegistrationSchema = z.object({
     .string()
     .email("E-mail inválido"),
 
-  telefonePessoal: z
+  telefone: z
     .string()
-    .min(10, "Telefone pessoal é obrigatório"),
+    .min(10, "Telefone é obrigatório"),
 
   cnpj: z
     .string()
@@ -30,10 +30,6 @@ export const buyerRegistrationSchema = z.object({
   redeSocial: z
     .string()
     .optional(),
-
-  telefoneComercial: z
-    .string()
-    .min(10, "Telefone comercial é obrigatório"),
 
   whatsapp: z
     .string()

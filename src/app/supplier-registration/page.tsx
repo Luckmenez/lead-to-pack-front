@@ -102,8 +102,8 @@ export default function SupplierRegistrationPage() {
         tipoInscricao: data.tipoInscricao,
         numeroInscricao: data.numeroInscricao,
         tipoEmpresa: data.tipoEmpresa,
-        website: data.website || undefined,
-        redeSocial: data.redeSocial || undefined,
+        website: data.website || "",
+        redeSocial: data.redeSocial || "",
       });
       loginFornecedor(res.accessToken, res.fornecedor);
       router.push(

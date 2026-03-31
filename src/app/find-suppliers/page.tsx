@@ -103,7 +103,7 @@ function SupplierCard({
           </div>
         ) : (
           <div
-            className="min-h-[1.5rem]"
+            className="min-h-6"
             data-aria-label="Área preparada para arquivos futuros"
           />
         )}
@@ -244,16 +244,14 @@ export default function FindSuppliersPage() {
   const [materialInput, setMaterialInput] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
   const [appliedMaterial, setAppliedMaterial] = useState("");
-  const [hasSearched, setHasSearched] = useState(false);
+  const [hasSearched, setHasSearched] = useState(true);
   const [pageSuppliers, setPageSuppliers] = useState(1);
   const [pageProfessionals, setPageProfessionals] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [supplierData, setSupplierData] = useState<ListResponse<
-    SupplierItem
-  > | null>(null);
-  const [professionalData, setProfessionalData] = useState<ListResponse<
-    ProfessionalItem
-  > | null>(null);
+  const [supplierData, setSupplierData] =
+    useState<ListResponse<SupplierItem> | null>(null);
+  const [professionalData, setProfessionalData] =
+    useState<ListResponse<ProfessionalItem> | null>(null);
   const [profileModal, setProfileModal] =
     useState<DiscoveryProfileModalState>(null);
 
@@ -271,22 +269,22 @@ export default function FindSuppliersPage() {
   useEffect(() => {
     if (!user || user.tipo !== "comprador" || !hasSearched) return;
 
-    setLoading(true);
     const params = {
       search: appliedSearch || undefined,
       material: appliedMaterial || undefined,
       limit: 9,
     };
 
-    Promise.all([
-      getSuppliers({ ...params, page: pageSuppliers }),
-      getProfessionals({ ...params, page: pageProfessionals }),
-    ])
-      .then(([sup, prof]) => {
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [sup, prof] = await Promise.all([
+          getSuppliers({ ...params, page: pageSuppliers }),
+          getProfessionals({ ...params, page: pageProfessionals }),
+        ]);
         setSupplierData(sup);
         setProfessionalData(prof);
-      })
-      .catch(() => {
+      } catch {
         setSupplierData({
           data: [],
           total: 0,
@@ -301,8 +299,12 @@ export default function FindSuppliersPage() {
           limit: 9,
           totalPages: 0,
         });
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, [
     user,
     pageSuppliers,
@@ -336,7 +338,12 @@ export default function FindSuppliersPage() {
 
   const hasSuppliers = supplierData && supplierData.data.length > 0;
   const hasProfessionals = professionalData && professionalData.data.length > 0;
-  const bothEmpty = !loading && supplierData && professionalData && !hasSuppliers && !hasProfessionals;
+  const bothEmpty =
+    !loading &&
+    supplierData &&
+    professionalData &&
+    !hasSuppliers &&
+    !hasProfessionals;
 
   return (
     <main className="mx-auto w-full max-w-[1200px] flex-1 px-6 py-10">
@@ -361,7 +368,9 @@ export default function FindSuppliersPage() {
       {!hasSearched ? (
         <div className="rounded-xl border border-[#E2E8F0] bg-white p-12 text-center">
           <p className="text-[#757575]">
-            Preencha os campos acima e clique em <span className="font-semibold text-[#284161]">Buscar</span> para exibir fornecedores e profissionais cadastrados.
+            Preencha os campos acima e clique em{" "}
+            <span className="font-semibold text-[#284161]">Buscar</span> para
+            exibir fornecedores e profissionais cadastrados.
           </p>
         </div>
       ) : loading ? (

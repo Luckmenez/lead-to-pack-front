@@ -72,7 +72,7 @@ export default function FindBuyersPage() {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
-  const [hasSearched, setHasSearched] = useState(false);
+  const [hasSearched, setHasSearched] = useState(true);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<{
@@ -97,17 +97,23 @@ export default function FindBuyersPage() {
   useEffect(() => {
     if (!user || user.tipo === "comprador" || !hasSearched) return;
 
-    setLoading(true);
-    getBuyers({
-      page,
-      limit: 9,
-      search: appliedSearch || undefined,
-    })
-      .then(setData)
-      .catch(() =>
-        setData({ data: [], total: 0, page: 1, limit: 9, totalPages: 0 })
-      )
-      .finally(() => setLoading(false));
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const result = await getBuyers({
+          page,
+          limit: 9,
+          search: appliedSearch || undefined,
+        });
+        setData(result);
+      } catch {
+        setData({ data: [], total: 0, page: 1, limit: 9, totalPages: 0 });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, [user, page, appliedSearch, hasSearched]);
 
   const handleSearch = (e: React.FormEvent) => {
