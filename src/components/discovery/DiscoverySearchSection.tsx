@@ -43,7 +43,7 @@ export function DiscoverySearchSection({
         <h1 className="text-balance font-sans text-[28px] font-bold leading-[1.4] tracking-normal text-[#284161] sm:text-[36px]">
           {title}
         </h1>
-        <p className="mx-auto mt-3 max-w-[43rem] text-balance font-sans text-[18px] font-medium leading-[1.7] text-[#757575] sm:text-[20px]">
+        <p className="mx-auto mt-3 max-w-172 text-balance font-sans text-[18px] font-medium leading-[1.7] text-[#757575] sm:text-[20px]">
           {subtitle}
         </p>
       </section>
