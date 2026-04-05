@@ -136,16 +136,53 @@ export type LoginProfissionalResponse = {
   profissional: ProfissionalUser;
 };
 
+export type LoginPrecisaEscolherPerfilResponse = {
+  precisaEscolherPerfil: true;
+  perfisDisponiveis: ("comprador" | "fornecedor")[];
+  comprador: CompradorUser;
+  fornecedor: FornecedorUser;
+};
+
 export type LoginResponse =
   | (LoginCompradorResponse & { tipo: "comprador" })
   | (LoginFornecedorResponse & { tipo: "fornecedor" })
-  | (LoginProfissionalResponse & { tipo: "profissional" });
+  | (LoginProfissionalResponse & { tipo: "profissional" })
+  | LoginPrecisaEscolherPerfilResponse;
+
+export type LoginSelecionarPerfilRequest = LoginCompradorRequest & {
+  perfil: "comprador" | "fornecedor";
+};
+
+export type LoginSelecionarPerfilResponse =
+  | (LoginCompradorResponse & { tipo: "comprador" })
+  | (LoginFornecedorResponse & { tipo: "fornecedor" });
+
+export function isLoginPrecisaEscolherPerfil(
+  res: LoginResponse
+): res is LoginPrecisaEscolherPerfilResponse {
+  return (
+    "precisaEscolherPerfil" in res &&
+    res.precisaEscolherPerfil === true
+  );
+}
 
 export async function login(data: LoginCompradorRequest): Promise<LoginResponse> {
   return apiClient<LoginResponse>("/auth/login", {
     method: "POST",
     body: JSON.stringify(data),
   });
+}
+
+export async function loginSelecionarPerfil(
+  data: LoginSelecionarPerfilRequest
+): Promise<LoginSelecionarPerfilResponse> {
+  return apiClient<LoginSelecionarPerfilResponse>(
+    "/auth/login/selecionar-perfil",
+    {
+      method: "POST",
+      body: JSON.stringify(data),
+    }
+  );
 }
 
 export async function registerProfissional(

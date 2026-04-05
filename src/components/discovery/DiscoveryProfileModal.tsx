@@ -5,12 +5,26 @@ import { FileTextIcon, XIcon } from "@phosphor-icons/react";
 import type { SupplierItem } from "@/lib/api/suppliers.api";
 import type { ProfessionalItem } from "@/lib/api/professionals.api";
 
-/** Simulação até existir bucket/arquivos reais no backend. */
+/* Simulação até existir bucket/arquivos reais no backend. */
 const MOCK_PROFILE_FILES = [
   "Catálogo Digital",
   "Certificação ISO 9001",
   "Apresentação Comercial",
 ] as const;
+
+function normalizeStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((x): x is string => typeof x === "string" && x.trim() !== "");
+}
+
+function tagsProdutosCadastrados(item: {
+  categoriasProdutos: unknown;
+  materiais: unknown;
+}): string[] {
+  const categorias = normalizeStringArray(item.categoriasProdutos);
+  const materiais = normalizeStringArray(item.materiais);
+  return [...new Set([...categorias, ...materiais])];
+}
 
 export type DiscoveryProfileModalState =
   | { variant: "supplier"; item: SupplierItem }
@@ -52,9 +66,11 @@ export function DiscoveryProfileModal({ state, onClose }: Props) {
   const pitch =
     state.item.descricaoInstitucional?.trim() ||
     "Nenhuma descrição cadastrada.";
-  const categorias = Array.isArray(state.item.categoriasProdutos)
-    ? state.item.categoriasProdutos
-    : [];
+  const tagsCadastro = tagsProdutosCadastrados(state.item);
+  const tagPillClass =
+    state.variant === "supplier"
+      ? "rounded bg-[#EEF6DB] px-3 py-1.5 text-sm text-[#5a7a1f]"
+      : "rounded bg-[#E7EFF5] px-3 py-1.5 text-sm text-[#4F83A6]";
 
   return (
     <div
@@ -126,22 +142,19 @@ export function DiscoveryProfileModal({ state, onClose }: Props) {
 
           <section>
             <h3 className="mb-3 text-sm font-bold text-[#0B2443]">
-              Categorias de atuação:
+              Categorias e materiais cadastrados:
             </h3>
-            {categorias.length > 0 ? (
+            {tagsCadastro.length > 0 ? (
               <div className="flex flex-wrap gap-2">
-                {categorias.map((cat) => (
-                  <span
-                    key={cat}
-                    className="rounded-full bg-gray-100 px-3 py-1.5 text-sm text-gray-800"
-                  >
-                    {cat}
+                {tagsCadastro.map((tag) => (
+                  <span key={tag} className={tagPillClass}>
+                    {tag}
                   </span>
                 ))}
               </div>
             ) : (
               <p className="text-sm text-gray-500">
-                Nenhuma categoria cadastrada.
+                Nenhuma categoria ou material cadastrado.
               </p>
             )}
           </section>
