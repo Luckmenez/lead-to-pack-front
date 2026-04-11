@@ -16,7 +16,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/contexts/AuthContext";
-import { login } from "@/lib/api/auth.api";
+import {
+  isLoginPrecisaEscolherPerfil,
+  login,
+  loginSelecionarPerfil,
+} from "@/lib/api/auth.api";
+import { ChooseProfileLoginModal } from "./choose-profile-login-modal";
+import type { ChooseProfileLoginModalState } from "./choose-profile-login-modal";
 import {
   LoginCompradorFormData,
   loginCompradorSchema,
@@ -26,6 +32,8 @@ export function LoginForm() {
   const { loginComprador, loginFornecedor, loginProfissional } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [profileChoice, setProfileChoice] =
+    useState<ChooseProfileLoginModalState | null>(null);
 
   const {
     register,
@@ -40,6 +48,15 @@ export function LoginForm() {
     setSubmitError(null);
     try {
       const res = await login({ email: data.email.trim(), senha: data.senha });
+      if (isLoginPrecisaEscolherPerfil(res)) {
+        setProfileChoice({
+          email: data.email.trim(),
+          senha: data.senha,
+          comprador: res.comprador,
+          fornecedor: res.fornecedor,
+        });
+        return;
+      }
       if (res.tipo === "comprador" && res.comprador) {
         loginComprador(res.accessToken, res.comprador);
         router.push("/find-suppliers");
@@ -55,7 +72,30 @@ export function LoginForm() {
     }
   };
 
+  const handleProfileChoice = async (perfil: "comprador" | "fornecedor") => {
+    if (!profileChoice) return;
+    const res = await loginSelecionarPerfil({
+      email: profileChoice.email,
+      senha: profileChoice.senha,
+      perfil,
+    });
+    setProfileChoice(null);
+    if (res.tipo === "comprador" && res.comprador) {
+      loginComprador(res.accessToken, res.comprador);
+      router.push("/find-suppliers");
+    } else if (res.tipo === "fornecedor" && res.fornecedor) {
+      loginFornecedor(res.accessToken, res.fornecedor);
+      router.push("/find-buyers");
+    }
+  };
+
   return (
+    <>
+      <ChooseProfileLoginModal
+        state={profileChoice}
+        onClose={() => setProfileChoice(null)}
+        onChoose={handleProfileChoice}
+      />
     <section className="relative mt-20 w-full overflow-hidden">
       <div className="absolute inset-0">
         <Image
@@ -167,5 +207,6 @@ export function LoginForm() {
         </div>
       </div>
     </section>
+    </>
   );
 }
