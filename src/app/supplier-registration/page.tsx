@@ -252,7 +252,9 @@ export default function SupplierRegistrationPage() {
               <option value="municipal">Municipal</option>
             </select>
             {errors.tipoInscricao && (
-              <p className="text-xs text-red-500">{errors.tipoInscricao.message}</p>
+              <p className="text-xs text-red-500">
+                {errors.tipoInscricao.message}
+              </p>
             )}
           </div>
 
@@ -276,7 +278,9 @@ export default function SupplierRegistrationPage() {
               <option value="simples_nacional">Simples Nacional</option>
             </select>
             {errors.tipoEmpresa && (
-              <p className="text-xs text-red-500">{errors.tipoEmpresa.message}</p>
+              <p className="text-xs text-red-500">
+                {errors.tipoEmpresa.message}
+              </p>
             )}
           </div>
         </div>
