@@ -114,11 +114,11 @@ export function LoginForm() {
         />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <div className="ml-auto w-full max-w-2xl p-4 sm:max-w-3xl sm:p-6">
+      <div className="relative mx-auto max-w-6xl px-4 py-12 sm:px-6">
+        <div className="ml-auto w-fit p-4 sm:p-6">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 items-center gap-4 sm:grid-cols-[1fr_1fr_auto] sm:gap-3">
-              <div className="min-w-0">
+            <div className="flex flex-row items-start gap-3">
+              <div className="w-48">
                 <div className="relative">
                   <EnvelopeSimple
                     size={18}
@@ -141,7 +141,7 @@ export function LoginForm() {
                 )}
               </div>
 
-              <div className="min-w-0">
+              <div className="w-48">
                 <div className="relative">
                   <LockIcon
                     size={18}
