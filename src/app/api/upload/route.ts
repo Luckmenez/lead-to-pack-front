@@ -12,13 +12,14 @@ const s3 = new S3Client({
 })
 
 export async function POST(req: Request) {
-  const { filename, contentType } = await req.json()
+  const { filename, contentType, userType, userId } = await req.json()
 
-  if (!filename || !contentType) {
-    return Response.json({ error: "filename e contentType são obrigatórios" }, { status: 400 })
+  if (!filename || !contentType || !userType || !userId) {
+    return Response.json({ error: "filename, contentType, userType e userId são obrigatórios" }, { status: 400 })
   }
 
-  const key = `portfolio/${Date.now()}-${filename.replace(/[^a-zA-Z0-9._-]/g, "_")}`
+  const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, "_")
+  const key = `portfolio/${userType}/${userId}/${Date.now()}-${safeName}`
 
   const command = new PutObjectCommand({
     Bucket: process.env.AWS_BUCKET_NAME!,

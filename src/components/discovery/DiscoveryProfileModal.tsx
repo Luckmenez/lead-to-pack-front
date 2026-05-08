@@ -1,20 +1,48 @@
 "use client";
 
 import { useEffect } from "react";
-import { FileTextIcon, XIcon } from "@phosphor-icons/react";
+import {
+  FileTextIcon,
+  FilePdfIcon,
+  ImageIcon,
+  XIcon,
+} from "@phosphor-icons/react";
 import type { SupplierItem } from "@/lib/api/suppliers.api";
 import type { ProfessionalItem } from "@/lib/api/professionals.api";
 
-/* Simulação até existir bucket/arquivos reais no backend. */
-const MOCK_PROFILE_FILES = [
-  "Catálogo Digital",
-  "Certificação ISO 9001",
-  "Apresentação Comercial",
-] as const;
+function getFileLabel(url: string): string {
+  const filename = url.split("/").pop() ?? url;
+  return filename.replace(/^\d+-/, "");
+}
+
+function FileIcon({ url }: { url: string }) {
+  const ext = url.split(".").pop()?.toLowerCase();
+  if (ext === "pdf")
+    return (
+      <FilePdfIcon size={20} weight="fill" className="shrink-0 text-red-400" />
+    );
+  if (ext === "png" || ext === "jpg" || ext === "jpeg")
+    return (
+      <ImageIcon
+        size={20}
+        weight="regular"
+        className="shrink-0 text-[#9CCB3B]"
+      />
+    );
+  return (
+    <FileTextIcon
+      size={20}
+      weight="regular"
+      className="shrink-0 text-gray-500"
+    />
+  );
+}
 
 function normalizeStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
-  return value.filter((x): x is string => typeof x === "string" && x.trim() !== "");
+  return value.filter(
+    (x): x is string => typeof x === "string" && x.trim() !== "",
+  );
 }
 
 function tagsProdutosCadastrados(item: {
@@ -56,9 +84,7 @@ export function DiscoveryProfileModal({ state, onClose }: Props) {
   if (!state) return null;
 
   const title =
-    state.variant === "supplier"
-      ? state.item.nomeFantasia
-      : state.item.apelido;
+    state.variant === "supplier" ? state.item.nomeFantasia : state.item.apelido;
   const badge =
     state.variant === "supplier"
       ? "Empresa Fornecedora"
@@ -67,6 +93,7 @@ export function DiscoveryProfileModal({ state, onClose }: Props) {
     state.item.descricaoInstitucional?.trim() ||
     "Nenhuma descrição cadastrada.";
   const tagsCadastro = tagsProdutosCadastrados(state.item);
+  const portfolioUrls = normalizeStringArray(state.item.portfolioUrls);
   const tagPillClass =
     state.variant === "supplier"
       ? "rounded bg-[#EEF6DB] px-3 py-1.5 text-sm text-[#5a7a1f]"
@@ -120,25 +147,28 @@ export function DiscoveryProfileModal({ state, onClose }: Props) {
 
           <p className="mb-6 text-sm leading-relaxed text-gray-700">{pitch}</p>
 
-          <section className="mb-6">
-            <h3 className="mb-3 text-sm font-bold text-[#0B2443]">
-              Materiais disponíveis:
-            </h3>
-            <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {MOCK_PROFILE_FILES.map((label) => (
-                <li key={label}>
-                  <div className="flex cursor-default items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800">
-                    <FileTextIcon
-                      size={20}
-                      weight="regular"
-                      className="shrink-0 text-gray-500"
-                    />
-                    <span className="truncate">{label}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </section>
+          {portfolioUrls.length > 0 && (
+            <section className="mb-6">
+              <h3 className="mb-3 text-sm font-bold text-[#0B2443]">
+                Portfólio:
+              </h3>
+              <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {portfolioUrls.map((url) => (
+                  <li key={url}>
+                    <a
+                      href={`/api/download?url=${encodeURIComponent(url)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 transition hover:border-gray-300 hover:bg-gray-50"
+                    >
+                      <FileIcon url={url} />
+                      <span className="truncate">{getFileLabel(url)}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           <section>
             <h3 className="mb-3 text-sm font-bold text-[#0B2443]">

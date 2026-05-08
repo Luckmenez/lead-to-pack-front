@@ -16,7 +16,7 @@ export default function Home() {
       user?.tipo === "fornecedor" ||
       user?.tipo === "profissional"
     ) {
-      router.replace("/find-buyers");
+      router.replace("/my-profile");
     } else {
       router.replace("/choose-profile");
     }

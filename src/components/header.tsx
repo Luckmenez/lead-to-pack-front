@@ -32,7 +32,7 @@ export function Header() {
             user?.tipo === "comprador"
               ? "/find-suppliers"
               : user?.tipo === "fornecedor" || user?.tipo === "profissional"
-                ? "/find-buyers"
+                ? "/my-profile"
                 : "/"
           }
           className="relative h-12 w-48 cursor-pointer"

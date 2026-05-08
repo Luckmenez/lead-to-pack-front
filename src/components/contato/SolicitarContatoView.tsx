@@ -16,7 +16,7 @@ type Props = {
   allowedTipos: PersonaTipo[];
   title: string;
   description: string;
-  /** Se omitido em contato com profissional, usa find-suppliers ou find-buyers conforme o perfil logado. */
+  /** Se omitido em contato com profissional, usa find-suppliers ou my-profile conforme o perfil logado. */
   backHref?: string;
   backLabel?: string;
 };
@@ -38,10 +38,10 @@ export function SolicitarContatoView({
     (tipoAlvo === "fornecedor"
       ? "/find-suppliers"
       : tipoAlvo === "comprador"
-        ? "/find-buyers"
+        ? "/my-profile"
         : user?.tipo === "comprador"
           ? "/find-suppliers"
-          : "/find-buyers");
+          : "/my-profile");
   const resolvedBackLabel =
     backLabelProp ??
     (resolvedBack === "/find-suppliers"

@@ -37,6 +37,7 @@ export function PasswordField({
       <div className="relative">
         <Input
           type={showPassword ? "text" : "password"}
+          autoComplete="new-password"
           placeholder={placeholder}
           className={`pr-10 ${error ? "border-red-500 focus:ring-red-500" : ""}`}
           {...register(name)}
@@ -47,11 +48,7 @@ export function PasswordField({
           className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
           aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
         >
-          {showPassword ? (
-            <EyeSlashIcon size={18} />
-          ) : (
-            <EyeIcon size={18} />
-          )}
+          {showPassword ? <EyeSlashIcon size={18} /> : <EyeIcon size={18} />}
         </button>
       </div>
 

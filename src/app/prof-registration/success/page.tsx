@@ -102,7 +102,7 @@ function ProfSuccessContent() {
 
             <Button
               className="bg-[#5B86A8] hover:bg-[#4A748F]"
-              onClick={() => router.push("/find-buyers")}
+              onClick={() => router.push("/my-profile")}
             >
               Continuar
             </Button>

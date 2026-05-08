@@ -11,6 +11,7 @@ export type ProfessionalItem = {
   setores: string[];
   website?: string | null;
   redeSocial?: string | null;
+  portfolioUrls: string[];
 };
 
 export type GetProfessionalsParams = {

@@ -1,8 +1,13 @@
-async function getPresignedUrl(filename: string, contentType: string) {
+type UploadContext = {
+  userType: "fornecedor" | "profissional"
+  userId: string
+}
+
+async function getPresignedUrl(filename: string, contentType: string, ctx: UploadContext) {
   const res = await fetch("/api/upload", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ filename, contentType }),
+    body: JSON.stringify({ filename, contentType, userType: ctx.userType, userId: ctx.userId }),
   })
 
   if (!res.ok) throw new Error("Erro ao gerar URL de upload")
@@ -10,8 +15,8 @@ async function getPresignedUrl(filename: string, contentType: string) {
   return res.json() as Promise<{ presignedUrl: string; publicUrl: string }>
 }
 
-export async function uploadFileToS3(file: File): Promise<string> {
-  const { presignedUrl, publicUrl } = await getPresignedUrl(file.name, file.type)
+export async function uploadFileToS3(file: File, ctx: UploadContext): Promise<string> {
+  const { presignedUrl, publicUrl } = await getPresignedUrl(file.name, file.type, ctx)
 
   const uploadRes = await fetch(presignedUrl, {
     method: "PUT",
@@ -24,6 +29,6 @@ export async function uploadFileToS3(file: File): Promise<string> {
   return publicUrl
 }
 
-export async function uploadFilesToS3(files: File[]): Promise<string[]> {
-  return Promise.all(files.map(uploadFileToS3))
+export async function uploadFilesToS3(files: File[], ctx: UploadContext): Promise<string[]> {
+  return Promise.all(files.map(file => uploadFileToS3(file, ctx)))
 }

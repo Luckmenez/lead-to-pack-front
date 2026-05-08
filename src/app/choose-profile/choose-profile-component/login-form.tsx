@@ -62,10 +62,10 @@ export function LoginForm() {
         router.push("/find-suppliers");
       } else if (res.tipo === "fornecedor" && res.fornecedor) {
         loginFornecedor(res.accessToken, res.fornecedor);
-        router.push("/find-buyers");
+        router.push("/my-profile");
       } else if (res.tipo === "profissional" && res.profissional) {
         loginProfissional(res.accessToken, res.profissional);
-        router.push("/find-buyers");
+        router.push("/my-profile");
       }
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : "Erro ao fazer login");
@@ -85,7 +85,7 @@ export function LoginForm() {
       router.push("/find-suppliers");
     } else if (res.tipo === "fornecedor" && res.fornecedor) {
       loginFornecedor(res.accessToken, res.fornecedor);
-      router.push("/find-buyers");
+      router.push("/my-profile");
     }
   };
 
@@ -116,7 +116,7 @@ export function LoginForm() {
 
       <div className="relative mx-auto max-w-6xl px-4 py-12 sm:px-6">
         <div className="ml-auto w-fit p-4 sm:p-6">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} autoComplete="off" className="space-y-4">
             <div className="flex flex-row items-start gap-3">
               <div className="w-48">
                 <div className="relative">
@@ -127,7 +127,7 @@ export function LoginForm() {
                   />
                   <Input
                     type="email"
-                    autoComplete="email"
+                    autoComplete="off"
                     placeholder="E-mail"
                     aria-label="E-mail"
                     className="pl-10 border border-gray-300 bg-white/95 focus:border-[#5B86A8]"
@@ -164,6 +164,7 @@ export function LoginForm() {
                   </button>
                   <Input
                     type={showPassword ? "text" : "password"}
+                    autoComplete="new-password"
                     placeholder="Senha"
                     aria-label="Senha"
                     className="pl-10 pr-10 border border-gray-300 bg-white/95 focus:border-[#5B86A8]"
