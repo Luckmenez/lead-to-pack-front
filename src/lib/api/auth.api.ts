@@ -86,6 +86,7 @@ export type RegisterFornecedorRequest = {
   tipoEmpresa: "mei" | "lucro_presumido" | "simples_nacional";
   website?: string;
   redeSocial?: string;
+  portfolioUrls?: string[];
 };
 
 export async function registerFornecedor(
@@ -119,6 +120,7 @@ export type RegisterProfissionalRequest = {
   servicos: string[];
   setores: string[];
   descricaoInstitucional: string;
+  portfolioUrls?: string[];
   formaPagamento: "cartao" | "boleto" | "pix";
   website?: string;
   redeSocial?: string;
@@ -191,5 +193,27 @@ export async function registerProfissional(
   return apiClient<LoginProfissionalResponse>("/auth/profissional/register", {
     method: "POST",
     body: JSON.stringify(data),
+  });
+}
+
+export async function updateFornecedorPortfolio(
+  portfolioUrls: string[],
+  token: string
+): Promise<void> {
+  return apiClient("/fornecedores/portfolio", {
+    method: "PATCH",
+    token,
+    body: JSON.stringify({ portfolioUrls }),
+  });
+}
+
+export async function updateProfissionalPortfolio(
+  portfolioUrls: string[],
+  token: string
+): Promise<void> {
+  return apiClient("/profissionais/portfolio", {
+    method: "PATCH",
+    token,
+    body: JSON.stringify({ portfolioUrls }),
   });
 }

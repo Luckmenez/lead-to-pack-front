@@ -19,7 +19,8 @@ import {
 import { ProgressBar } from "@/app/supplier-registration/supplier-registration-component/progressBar";
 import { maskCNPJ, maskPhonePersonal, normalizeEmail } from "@/utils/masks";
 import { PortfolioDropzone } from "@/components/Dropzone";
-import { registerFornecedor } from "@/lib/api/auth.api";
+import { registerFornecedor, updateFornecedorPortfolio } from "@/lib/api/auth.api";
+import { uploadFilesToS3 } from "@/lib/api/upload.api";
 import { useAuth } from "@/contexts/AuthContext";
 
 const ESTADOS_BR = [
@@ -105,6 +106,14 @@ export default function SupplierRegistrationPage() {
         website: data.website || "",
         redeSocial: data.redeSocial || "",
       });
+
+      const portfolioUrls = await uploadFilesToS3(data.portfolio, {
+        userType: "fornecedor",
+        userId: res.fornecedor.id,
+      });
+
+      await updateFornecedorPortfolio(portfolioUrls, res.accessToken);
+
       loginFornecedor(res.accessToken, res.fornecedor);
       router.push(
         `/supplier-registration/payment?payment=${data.formaPagamento}`,
@@ -399,19 +408,11 @@ export default function SupplierRegistrationPage() {
           control={form.control}
           name="portfolio"
           render={({ field }) => (
-            <>
-              <PortfolioDropzone
-                value={field.value}
-                onChange={(files: File[]) => field.onChange(files)}
-                error={errors.portfolio?.message}
-              />
-
-              {errors.portfolio?.message && (
-                <p className="mt-1 text-xs text-red-500">
-                  {errors.portfolio.message}
-                </p>
-              )}
-            </>
+            <PortfolioDropzone
+              value={field.value}
+              onChange={(files: File[]) => field.onChange(files)}
+              error={errors.portfolio?.message}
+            />
           )}
         />
 

@@ -1,445 +1,461 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Controller, useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { ArrowLeftIcon, BriefcaseIcon } from "@phosphor-icons/react"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeftIcon, BriefcaseIcon } from "@phosphor-icons/react";
 
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { FormField } from "@/components/ui/FormField"
-import { PasswordField } from "@/components/ui/PasswordField"
-import { PortfolioDropzone } from "@/components/Dropzone"
-import { InterestGroup } from "@/app/buyer-registration/buyer-registration-component/InterestGroup"
-import { ProgressBar } from "@/app/supplier-registration/supplier-registration-component/progressBar"
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { FormField } from "@/components/ui/FormField";
+import { PasswordField } from "@/components/ui/PasswordField";
+import { PortfolioDropzone } from "@/components/Dropzone";
+import { InterestGroup } from "@/app/buyer-registration/buyer-registration-component/InterestGroup";
+import { ProgressBar } from "@/app/supplier-registration/supplier-registration-component/progressBar";
 
 import {
-    ProfRegistrationFormData,
-    profRegistrationSchema,
-} from "../schemas/profRegistration.schema"
-import { maskCPF, maskPhonePersonal, normalizeEmail } from "@/utils/masks"
-import { registerProfissional } from "@/lib/api/auth.api"
-import { useAuth } from "@/contexts/AuthContext"
+  ProfRegistrationFormData,
+  profRegistrationSchema,
+} from "../schemas/profRegistration.schema";
+import { maskCPF, maskPhonePersonal, normalizeEmail } from "@/utils/masks";
+import { registerProfissional, updateProfissionalPortfolio } from "@/lib/api/auth.api";
+import { uploadFilesToS3 } from "@/lib/api/upload.api";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function ProfRegistrationPage() {
-    const form = useForm<ProfRegistrationFormData>({
-        resolver: zodResolver(profRegistrationSchema),
-        defaultValues: {
-            categoriasProdutos: [],
-            materiais: [],
-            servicos: [],
-            setores: [],
-            portfolio: [],
-            senha: "",
-            confirmarSenha: "",
-            aceitarPrivacidade: false,
-            aceitarCookies: false,
-        },
-    })
+  const form = useForm<ProfRegistrationFormData>({
+    resolver: zodResolver(profRegistrationSchema),
+    defaultValues: {
+      categoriasProdutos: [],
+      materiais: [],
+      servicos: [],
+      setores: [],
+      portfolio: [],
+      senha: "",
+      confirmarSenha: "",
+      aceitarPrivacidade: false,
+      aceitarCookies: false,
+    },
+  });
 
-    const router = useRouter()
-    const { loginProfissional } = useAuth()
-    const [submitError, setSubmitError] = useState<string | null>(null)
+  const router = useRouter();
+  const { loginProfissional } = useAuth();
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-    const {
-        handleSubmit,
-        register,
-        formState: { errors, isSubmitting },
-    } = form
+  const {
+    handleSubmit,
+    register,
+    formState: { errors, isSubmitting },
+  } = form;
 
-    const onSubmit = async (data: ProfRegistrationFormData) => {
-        setSubmitError(null)
-        try {
-            const res = await registerProfissional({
-                cpf: String(data.cpf).replace(/\D/g, ""),
-                senha: data.senha,
-                nomeCompleto: data.nomeCompleto,
-                apelido: data.apelido,
-                telefonePessoal: String(data.telefonePessoal).replace(/\D/g, ""),
-                whatsappPessoal: String(data.whatsappPessoal).replace(/\D/g, ""),
-                emailPessoal: data.emailPessoal,
-                categoriasProdutos: data.categoriasProdutos,
-                materiais: data.materiais,
-                servicos: data.servicos,
-                setores: data.setores,
-                descricaoInstitucional: data.descricaoInstitucional,
-                formaPagamento: data.formaPagamento,
-                website: data.website || "",
-                redeSocial: data.redeSocial || "",
-            })
-            loginProfissional(res.accessToken, res.profissional)
-            router.push(`/prof-registration/payment?payment=${data.formaPagamento}`)
-        } catch (e) {
-            setSubmitError(e instanceof Error ? e.message : "Erro ao realizar cadastro")
-        }
+  const onSubmit = async (data: ProfRegistrationFormData) => {
+    setSubmitError(null);
+    try {
+      const res = await registerProfissional({
+        cpf: String(data.cpf).replace(/\D/g, ""),
+        senha: data.senha,
+        nomeCompleto: data.nomeCompleto,
+        apelido: data.apelido,
+        telefonePessoal: String(data.telefonePessoal).replace(/\D/g, ""),
+        whatsappPessoal: String(data.whatsappPessoal).replace(/\D/g, ""),
+        emailPessoal: data.emailPessoal,
+        categoriasProdutos: data.categoriasProdutos,
+        materiais: data.materiais,
+        servicos: data.servicos,
+        setores: data.setores,
+        descricaoInstitucional: data.descricaoInstitucional,
+        formaPagamento: data.formaPagamento,
+        website: data.website || "",
+        redeSocial: data.redeSocial || "",
+      });
+
+      const portfolioUrls = await uploadFilesToS3(data.portfolio, {
+        userType: "profissional",
+        userId: res.profissional.id,
+      });
+
+      await updateProfissionalPortfolio(portfolioUrls, res.accessToken);
+
+      loginProfissional(res.accessToken, res.profissional);
+      router.push(`/prof-registration/payment?payment=${data.formaPagamento}`);
+    } catch (e) {
+      setSubmitError(
+        e instanceof Error ? e.message : "Erro ao realizar cadastro",
+      );
     }
+  };
 
-    return (
-        <main className="mx-auto max-w-6xl px-6 py-10">
-            <ProgressBar step={1} />
+  return (
+    <main className="mx-auto max-w-6xl px-6 py-10">
+      <ProgressBar step={1} />
 
-            <div className="mb-6 flex justify-end">
-                <Link
-                    href="/choose-profile"
-                    className="flex cursor-pointer items-center gap-2 rounded-full bg-[#E7EFF5] px-4 py-1.5 text-sm font-medium text-[#4F83A6] transition hover:bg-[#dbe7f0]"
-                >
-                    <ArrowLeftIcon size={14} weight="bold" />
-                    Voltar
-                </Link>
-            </div>
+      <div className="mb-6 flex justify-end">
+        <Link
+          href="/choose-profile"
+          className="flex cursor-pointer items-center gap-2 rounded-full bg-[#E7EFF5] px-4 py-1.5 text-sm font-medium text-[#4F83A6] transition hover:bg-[#dbe7f0]"
+        >
+          <ArrowLeftIcon size={14} weight="bold" />
+          Voltar
+        </Link>
+      </div>
 
-            <section className="mb-8">
-                <div className="flex items-center gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E7EFF5]">
-                        <BriefcaseIcon size={20} weight="bold" color="#4F83A6" />
-                    </span>
+      <section className="mb-8">
+        <div className="flex items-center gap-3">
+          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E7EFF5]">
+            <BriefcaseIcon size={20} weight="bold" color="#4F83A6" />
+          </span>
 
-                    <div>
-                        <h1 className="text-xl font-semibold">Cadastro Profissional do Setor</h1>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                            Preencha seus dados para começar a ter clientes.
-                        </p>
-                    </div>
-                </div>
-            </section>
+          <div>
+            <h1 className="text-xl font-semibold">
+              Cadastro Profissional do Setor
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Preencha seus dados para começar a ter clientes.
+            </p>
+          </div>
+        </div>
+      </section>
 
-            <form
-                onSubmit={handleSubmit(onSubmit)}
-                className="rounded-xl border bg-white p-6 shadow-sm"
-            >
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <FormField
-                        label="CPF*"
-                        placeholder="Ex: 000.000.000-00"
-                        name="cpf"
-                        register={register}
-                        error={errors.cpf?.message}
-                        onChangeCustom={maskCPF}
-                    />
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="rounded-xl border bg-white p-6 shadow-sm"
+      >
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <FormField
+            label="CPF*"
+            placeholder="Ex: 000.000.000-00"
+            name="cpf"
+            register={register}
+            error={errors.cpf?.message}
+            onChangeCustom={maskCPF}
+          />
 
-                    <FormField
-                        label="Nome Completo*"
-                        placeholder="Ex: João da Silva"
-                        name="nomeCompleto"
-                        register={register}
-                        error={errors.nomeCompleto?.message}
-                    />
+          <FormField
+            label="Nome Completo*"
+            placeholder="Ex: João da Silva"
+            name="nomeCompleto"
+            register={register}
+            error={errors.nomeCompleto?.message}
+          />
 
-                    <FormField
-                        label="Apelido*"
-                        placeholder="Ex: João"
-                        name="apelido"
-                        register={register}
-                        error={errors.apelido?.message}
-                    />
+          <FormField
+            label="Apelido*"
+            placeholder="Ex: João"
+            name="apelido"
+            register={register}
+            error={errors.apelido?.message}
+          />
 
-                    <FormField
-                        label="Telefone pessoal*"
-                        placeholder="(11) 3333-3333"
-                        name="telefonePessoal"
-                        register={register}
-                        error={errors.telefonePessoal?.message}
-                        onChangeCustom={maskPhonePersonal}
-                    />
+          <FormField
+            label="Telefone pessoal*"
+            placeholder="(11) 3333-3333"
+            name="telefonePessoal"
+            register={register}
+            error={errors.telefonePessoal?.message}
+            onChangeCustom={maskPhonePersonal}
+          />
 
-                    <FormField
-                        label="WhatsApp pessoal*"
-                        placeholder="(11) 99999-9999"
-                        name="whatsappPessoal"
-                        register={register}
-                        error={errors.whatsappPessoal?.message}
-                        onChangeCustom={maskPhonePersonal}
-                    />
+          <FormField
+            label="WhatsApp pessoal*"
+            placeholder="(11) 99999-9999"
+            name="whatsappPessoal"
+            register={register}
+            error={errors.whatsappPessoal?.message}
+            onChangeCustom={maskPhonePersonal}
+          />
 
-                    <FormField
-                        label="E-mail pessoal*"
-                        placeholder="contato@suaempresa.com.br"
-                        name="emailPessoal"
-                        register={register}
-                        error={errors.emailPessoal?.message}
-                        onChangeCustom={normalizeEmail}
-                    />
+          <FormField
+            label="E-mail pessoal*"
+            placeholder="contato@suaempresa.com.br"
+            name="emailPessoal"
+            register={register}
+            error={errors.emailPessoal?.message}
+            onChangeCustom={normalizeEmail}
+          />
 
-                    <FormField
-                        label="Website"
-                        name="website"
-                        register={register}
-                        error={errors.website?.message}
-                        onChangeCustom={normalizeEmail}
-                    />
+          <FormField
+            label="Website"
+            name="website"
+            register={register}
+            error={errors.website?.message}
+            onChangeCustom={normalizeEmail}
+          />
 
-                    <FormField
-                        label="Rede Social (Instagram/LinkedIn/TikTok)"
-                        name="redeSocial"
-                        register={register}
-                        error={errors.redeSocial?.message}
-                        onChangeCustom={normalizeEmail}
-                    />
+          <FormField
+            label="Rede Social (Instagram/LinkedIn/TikTok)"
+            name="redeSocial"
+            register={register}
+            error={errors.redeSocial?.message}
+            onChangeCustom={normalizeEmail}
+          />
+        </div>
 
-                </div>
+        <hr className="my-8" />
 
-                <hr className="my-8" />
+        <section className="space-y-6">
+          <h2 className="text-sm font-semibold">
+            Selecione os itens de interesse:
+          </h2>
 
-                <section className="space-y-6">
-                    <h2 className="text-sm font-semibold">Selecione os itens de interesse:</h2>
+          <InterestGroup
+            title="Categorias de Produtos"
+            name="categoriasProdutos"
+            items={[
+              "Embalagens Primárias",
+              "Embalagens Secundárias",
+              "Embalagens Terciárias",
+              "Acessórios e Componentes",
+              "Etiquetas e Rótulos",
+              "Embalagens Sustentáveis/Recicladas",
+            ]}
+            control={form.control}
+            error={errors.categoriasProdutos?.message}
+          />
 
-                    <InterestGroup
-                        title="Categorias de Produtos"
-                        name="categoriasProdutos"
-                        items={[
-                            "Embalagens Primárias",
-                            "Embalagens Secundárias",
-                            "Embalagens Terciárias",
-                            "Acessórios e Componentes",
-                            "Etiquetas e Rótulos",
-                            "Embalagens Sustentáveis/Recicladas",
-                        ]}
-                        control={form.control}
-                        error={errors.categoriasProdutos?.message}
-                    />
+          <InterestGroup
+            title="Materiais"
+            name="materiais"
+            items={[
+              "Papel / Papelão",
+              "Plásticos",
+              "Vidro",
+              "Metal e Alumínio",
+              "Madeira / Bambu",
+              "Tecido / Têxtil",
+              "Biopolímeros / Compostáveis",
+              "Multicamadas / Laminados",
+              "Rótulos e Etiquetas",
+              "Outros (Cerâmica, EPS)",
+            ]}
+            control={form.control}
+            error={errors.materiais?.message}
+          />
 
-                    <InterestGroup
-                        title="Materiais"
-                        name="materiais"
-                        items={[
-                            "Papel / Papelão",
-                            "Plásticos",
-                            "Vidro",
-                            "Metal e Alumínio",
-                            "Madeira / Bambu",
-                            "Tecido / Têxtil",
-                            "Biopolímeros / Compostáveis",
-                            "Multicamadas / Laminados",
-                            "Rótulos e Etiquetas",
-                            "Outros (Cerâmica, EPS)",
-                        ]}
-                        control={form.control}
-                        error={errors.materiais?.message}
-                    />
+          <InterestGroup
+            title="Serviços"
+            name="servicos"
+            items={[
+              "Design & Desenvolvimento",
+              "Prototipagem e Amostras",
+              "Impressão e Personalização",
+              "Produção Própria",
+              "Private Label",
+              "Fornecimento Sob Demanda (JIT)",
+              "Consultoria em Embalagens",
+              "Logística e Armazenagem",
+              "Reciclagem e Pós-consumo",
+            ]}
+            control={form.control}
+            error={errors.servicos?.message}
+          />
 
-                    <InterestGroup
-                        title="Serviços"
-                        name="servicos"
-                        items={[
-                            "Design & Desenvolvimento",
-                            "Prototipagem e Amostras",
-                            "Impressão e Personalização",
-                            "Produção Própria",
-                            "Private Label",
-                            "Fornecimento Sob Demanda (JIT)",
-                            "Consultoria em Embalagens",
-                            "Logística e Armazenagem",
-                            "Reciclagem e Pós-consumo",
-                        ]}
-                        control={form.control}
-                        error={errors.servicos?.message}
-                    />
+          <InterestGroup
+            title="Setores"
+            name="setores"
+            items={[
+              "Alimentos & Bebidas",
+              "Farmacêutico & Hospitalar",
+              "Cosmético & Higiene",
+              "Editorial / Papelaria",
+              "Domissanitários",
+              "Pet",
+              "E-commerce & Logística",
+              "Industrial & Químico",
+              "Moda & Têxtil",
+              "Eletrônicos",
+              "Orgânicos",
+              "Bebidas Alcoólicas",
+              "Outros",
+            ]}
+            control={form.control}
+            error={errors.setores?.message}
+          />
+        </section>
 
-                    <InterestGroup
-                        title="Setores"
-                        name="setores"
-                        items={[
-                            "Alimentos & Bebidas",
-                            "Farmacêutico & Hospitalar",
-                            "Cosmético & Higiene",
-                            "Editorial / Papelaria",
-                            "Domissanitários",
-                            "Pet",
-                            "E-commerce & Logística",
-                            "Industrial & Químico",
-                            "Moda & Têxtil",
-                            "Eletrônicos",
-                            "Orgânicos",
-                            "Bebidas Alcoólicas",
-                            "Outros",
-                        ]}
-                        control={form.control}
-                        error={errors.setores?.message}
-                    />
-                </section>
+        <hr className="my-8" />
 
-                <hr className="my-8" />
+        <div className="space-y-1">
+          <label className="text-sm font-medium">
+            Descrição Institucional (Pitch)*
+          </label>
 
-                <div className="space-y-1">
-                    <label className="text-sm font-medium">Descrição Institucional (Pitch)*</label>
+          <textarea
+            {...register("descricaoInstitucional")}
+            rows={4}
+            maxLength={300}
+            placeholder="Escreva em poucas palavras sobre sua empresa, especialidades e diferenciais... (mínimo 300 caracteres)"
+            className={`w-full rounded-md border p-3 text-sm ${
+              errors.descricaoInstitucional?.message
+                ? "border-red-500 focus:ring-red-500"
+                : "border-input"
+            }`}
+          />
 
-                    <textarea
-                        {...register("descricaoInstitucional")}
-                        rows={4}
-                        maxLength={300}
-                        placeholder="Escreva em poucas palavras sobre sua empresa, especialidades e diferenciais... (mínimo 300 caracteres)"
-                        className={`w-full rounded-md border p-3 text-sm ${
-                            errors.descricaoInstitucional?.message
-                                ? "border-red-500 focus:ring-red-500"
-                                : "border-input"
-                        }`}
-                    />
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>{errors.descricaoInstitucional?.message}</span>
+            <span>Máx. 300 caracteres</span>
+          </div>
+        </div>
 
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>{errors.descricaoInstitucional?.message}</span>
-                        <span>Máx. 300 caracteres</span>
-                    </div>
-                </div>
+        <hr className="my-8" />
 
-                <hr className="my-8" />
+        <label className="text-sm font-medium">
+          Upload de portfólio* (PDF, JPG, PNG - máx. 10MB cada)
+        </label>
 
-                <label className="text-sm font-medium">
-                    Upload de portfólio* (PDF, JPG, PNG - máx. 10MB cada)
-                </label>
+        <Controller
+          control={form.control}
+          name="portfolio"
+          render={({ field }) => (
+            <PortfolioDropzone
+              value={field.value}
+              onChange={(files: File[]) => field.onChange(files)}
+              error={errors.portfolio?.message}
+            />
+          )}
+        />
 
-                <Controller
-                    control={form.control}
-                    name="portfolio"
-                    render={({ field }) => (
-                        <>
-                            <PortfolioDropzone
-                                value={field.value}
-                                onChange={(files: File[]) => field.onChange(files)}
-                                error={errors.portfolio?.message}
-                            />
+        <hr className="my-8" />
 
-                            {errors.portfolio?.message && (
-                                <p className="mt-1 text-xs text-red-500">
-                                    {errors.portfolio.message}
-                                </p>
-                            )}
-                        </>
-                    )}
+        <section className="space-y-4">
+          <h2 className="text-sm font-semibold">
+            Defina uma senha de 8 dígitos para realizar seu login:
+          </h2>
+
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <PasswordField
+              label="Senha*"
+              placeholder="Ex: Xpto1234*"
+              register={register}
+              name="senha"
+              error={errors.senha?.message}
+            />
+
+            <PasswordField
+              label="Confirme sua senha*"
+              placeholder="xxxxxxxxx"
+              register={register}
+              name="confirmarSenha"
+              error={errors.confirmarSenha?.message}
+            />
+          </div>
+        </section>
+
+        <hr className="my-8" />
+
+        <div className="mb-4 space-y-1 text-sm">
+          <a href="#" className="block text-blue-600 hover:underline">
+            • Termos de Uso
+          </a>
+
+          <a href="#" className="block text-blue-600 hover:underline">
+            • Política de Privacidade
+          </a>
+
+          <a href="#" className="block text-blue-600 hover:underline">
+            • Política de Cookies
+          </a>
+
+          <a href="#" className="block text-blue-600 hover:underline">
+            • Código de Conduta
+          </a>
+        </div>
+
+        <div className="space-y-3 pt-4 text-sm">
+          <div className="flex cursor-pointer items-start gap-2">
+            <Controller
+              control={form.control}
+              name="aceitarPrivacidade"
+              render={({ field }) => (
+                <Checkbox
+                  checked={Boolean(field.value)}
+                  onCheckedChange={(v) => field.onChange(Boolean(v))}
                 />
+              )}
+            />
+            <label>
+              Li e estou de acordo com os termos de uso e política de
+              privacidade
+            </label>
+          </div>
 
-                <hr className="my-8" />
+          {errors.aceitarPrivacidade && (
+            <p className="text-xs text-red-500">
+              {errors.aceitarPrivacidade.message}
+            </p>
+          )}
 
-                <section className="space-y-4">
-                    <h2 className="text-sm font-semibold">
-                        Defina uma senha de 8 dígitos para realizar seu login:
-                    </h2>
+          <div className="flex cursor-pointer items-start gap-2">
+            <Controller
+              control={form.control}
+              name="aceitarCookies"
+              render={({ field }) => (
+                <Checkbox
+                  checked={Boolean(field.value)}
+                  onCheckedChange={(v) => field.onChange(Boolean(v))}
+                />
+              )}
+            />
+            <label>
+              Li e estou de acordo com a política de cookies e código de conduta
+            </label>
+          </div>
 
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <PasswordField
-                            label="Senha*"
-                            placeholder="Ex: Xpto1234*"
-                            register={register}
-                            name="senha"
-                            error={errors.senha?.message}
-                        />
+          {errors.aceitarCookies && (
+            <p className="text-xs text-red-500">
+              {errors.aceitarCookies.message}
+            </p>
+          )}
+        </div>
 
-                        <PasswordField
-                            label="Confirme sua senha*"
-                            placeholder="xxxxxxxxx"
-                            register={register}
-                            name="confirmarSenha"
-                            error={errors.confirmarSenha?.message}
-                        />
-                    </div>
-                </section>
+        <hr className="my-8" />
 
-                <hr className="my-8" />
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold">
+            Selecione a forma de pagamento:
+          </h3>
 
-                <div className="mb-4 space-y-1 text-sm">
-                    <a href="#" className="block text-blue-600 hover:underline">
-                        • Termos de Uso
-                    </a>
+          <div className="pb-2 text-sm font-light">
+            R$ 000,00/mês - Cancele quando quiser
+          </div>
 
-                    <a href="#" className="block text-blue-600 hover:underline">
-                        • Política de Privacidade
-                    </a>
+          {(["cartao", "boleto", "pix"] as const).map((p) => (
+            <label
+              key={p}
+              className="flex cursor-pointer items-center gap-2 text-sm"
+            >
+              <input type="radio" value={p} {...register("formaPagamento")} />
+              {p === "cartao" && "Cartão de crédito"}
+              {p === "boleto" && "Boleto bancário"}
+              {p === "pix" && "PIX"}
+            </label>
+          ))}
 
-                    <a href="#" className="block text-blue-600 hover:underline">
-                        • Política de Cookies
-                    </a>
+          {errors.formaPagamento && (
+            <p className="text-xs text-red-500">
+              {errors.formaPagamento.message}
+            </p>
+          )}
+        </div>
 
-                    <a href="#" className="block text-blue-600 hover:underline">
-                        • Código de Conduta
-                    </a>
-                </div>
+        <hr className="my-8" />
 
-                <div className="space-y-3 pt-4 text-sm">
-                    <div className="flex cursor-pointer items-start gap-2">
-                        <Controller
-                            control={form.control}
-                            name="aceitarPrivacidade"
-                            render={({ field }) => (
-                                <Checkbox
-                                    checked={Boolean(field.value)}
-                                    onCheckedChange={v => field.onChange(Boolean(v))}
-                                />
-                            )}
-                        />
-                        <label>
-                            Li e estou de acordo com os termos de uso e política de privacidade
-                        </label>
-                    </div>
+        {submitError && (
+          <p className="mb-4 text-sm text-red-500">{submitError}</p>
+        )}
 
-                    {errors.aceitarPrivacidade && (
-                        <p className="text-xs text-red-500">{errors.aceitarPrivacidade.message}</p>
-                    )}
-
-                    <div className="flex cursor-pointer items-start gap-2">
-                        <Controller
-                            control={form.control}
-                            name="aceitarCookies"
-                            render={({ field }) => (
-                                <Checkbox
-                                    checked={Boolean(field.value)}
-                                    onCheckedChange={v => field.onChange(Boolean(v))}
-                                />
-                            )}
-                        />
-                        <label>
-                            Li e estou de acordo com a política de cookies e código de conduta
-                        </label>
-                    </div>
-
-                    {errors.aceitarCookies && (
-                        <p className="text-xs text-red-500">{errors.aceitarCookies.message}</p>
-                    )}
-                </div>
-
-                <hr className="my-8" />
-
-                <div className="space-y-2">
-                    <h3 className="text-sm font-semibold">Selecione a forma de pagamento:</h3>
-
-                    <div className="pb-2 text-sm font-light">
-                        R$ 000,00/mês - Cancele quando quiser
-                    </div>
-
-                    {(["cartao", "boleto", "pix"] as const).map(p => (
-                        <label key={p} className="flex cursor-pointer items-center gap-2 text-sm">
-                            <input
-                                type="radio"
-                                value={p}
-                                {...register("formaPagamento")}
-                            />
-                            {p === "cartao" && "Cartão de crédito"}
-                            {p === "boleto" && "Boleto bancário"}
-                            {p === "pix" && "PIX"}
-                        </label>
-                    ))}
-
-                    {errors.formaPagamento && (
-                        <p className="text-xs text-red-500">{errors.formaPagamento.message}</p>
-                    )}
-                </div>
-
-                <hr className="my-8" />
-
-                {submitError && (
-                    <p className="mb-4 text-sm text-red-500">{submitError}</p>
-                )}
-
-                <div className="mt-8 flex justify-center">
-                    <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="rounded-full bg-[#5B86A8] px-10 hover:bg-[#4A748F]"
-                    >
-                        {isSubmitting ? "Cadastrando..." : "Avançar para pagamento"}
-                    </Button>
-                </div>
-            </form>
-        </main>
-    )
+        <div className="mt-8 flex justify-center">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="rounded-full bg-[#5B86A8] px-10 hover:bg-[#4A748F]"
+          >
+            {isSubmitting ? "Cadastrando..." : "Avançar para pagamento"}
+          </Button>
+        </div>
+      </form>
+    </main>
+  );
 }

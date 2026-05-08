@@ -10,6 +10,7 @@ export type SupplierItem = {
   setores: string[];
   cidade?: string;
   estado?: string;
+  portfolioUrls: string[];
 };
 
 export type GetSuppliersParams = {
