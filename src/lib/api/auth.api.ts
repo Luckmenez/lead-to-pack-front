@@ -86,6 +86,7 @@ export type RegisterFornecedorRequest = {
   tipoEmpresa: "mei" | "lucro_presumido" | "simples_nacional";
   website?: string;
   redeSocial?: string;
+  portfolioUrls: string[];
 };
 
 export async function registerFornecedor(

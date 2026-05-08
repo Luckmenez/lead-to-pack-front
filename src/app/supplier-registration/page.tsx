@@ -20,6 +20,7 @@ import { ProgressBar } from "@/app/supplier-registration/supplier-registration-c
 import { maskCNPJ, maskPhonePersonal, normalizeEmail } from "@/utils/masks";
 import { PortfolioDropzone } from "@/components/Dropzone";
 import { registerFornecedor } from "@/lib/api/auth.api";
+import { uploadFilesToS3 } from "@/lib/api/upload.api";
 import { useAuth } from "@/contexts/AuthContext";
 
 const ESTADOS_BR = [
@@ -83,6 +84,8 @@ export default function SupplierRegistrationPage() {
   const onSubmit = async (data: SupplierRegistrationFormData) => {
     setSubmitError(null);
     try {
+      const portfolioUrls = await uploadFilesToS3(data.portfolio);
+
       const res = await registerFornecedor({
         senha: data.senha,
         telefone: String(data.telefone).replace(/\D/g, ""),
@@ -104,6 +107,7 @@ export default function SupplierRegistrationPage() {
         tipoEmpresa: data.tipoEmpresa,
         website: data.website || "",
         redeSocial: data.redeSocial || "",
+        portfolioUrls,
       });
       loginFornecedor(res.accessToken, res.fornecedor);
       router.push(
