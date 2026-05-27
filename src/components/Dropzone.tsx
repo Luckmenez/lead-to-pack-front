@@ -10,10 +10,11 @@ type Props = {
   value?: File[];
   onChange: (files: File[]) => void;
   error?: string;
+  existingCount?: number;
 };
 
-export function PortfolioDropzone({ value = [], onChange, error }: Props) {
-  const remaining = MAX_FILES - value.length;
+export function PortfolioDropzone({ value = [], onChange, error, existingCount = 0 }: Props) {
+  const remaining = MAX_FILES - value.length - existingCount;
 
   const onDrop = useCallback(
     (accepted: File[]) => {
