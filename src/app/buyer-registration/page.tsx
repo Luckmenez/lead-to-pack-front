@@ -23,6 +23,7 @@ import {
 } from "@/utils/masks";
 import { registerComprador } from "@/lib/api/auth.api";
 import { useAuth } from "@/contexts/AuthContext";
+import { saveCompradorExtra } from "@/lib/api/my-profile.api";
 
 export default function BuyerRegistrationPage() {
   const form = useForm<BuyerRegistrationFormData>({
@@ -50,6 +51,7 @@ export default function BuyerRegistrationPage() {
     try {
       const whatsappDigits = String(data.whatsapp).replace(/\D/g, "");
       const telefoneDigits = String(data.telefone).replace(/\D/g, "");
+      const cnpjDigits = String(data.cnpj).replace(/\D/g, "");
       const res = await registerComprador({
         senha: data.senha,
         nomeCompleto: data.nomeCompleto,
@@ -57,12 +59,21 @@ export default function BuyerRegistrationPage() {
         whatsappPessoal: whatsappDigits,
         whatsappComercial: whatsappDigits,
         email: data.email,
-        cnpj: String(data.cnpj).replace(/\D/g, ""),
+        cnpj: cnpjDigits,
         razaoSocial: data.razaoSocial,
         nomeFantasia: data.nomeFantasia || undefined,
         telefoneComercial: telefoneDigits,
         website: data.website || "",
         redeSocial: data.redeSocial || "",
+      });
+      saveCompradorExtra({
+        cnpj: cnpjDigits,
+        razaoSocial: data.razaoSocial,
+        nomeFantasia: data.nomeFantasia || null,
+        telefone: telefoneDigits,
+        whatsapp: whatsappDigits,
+        website: data.website || null,
+        redeSocial: data.redeSocial || null,
       });
       loginComprador(res.accessToken, res.comprador);
       router.push("/find-suppliers");

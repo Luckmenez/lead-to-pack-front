@@ -54,6 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
     localStorage.removeItem(TIPO_KEY);
+    localStorage.removeItem("lead2pack_comprador_profile");
     setState({
       token: null,
       user: null,
