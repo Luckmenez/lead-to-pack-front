@@ -217,3 +217,20 @@ export async function updateProfissionalPortfolio(
     body: JSON.stringify({ portfolioUrls }),
   });
 }
+
+export async function forgotPassword(email: string): Promise<{ message: string }> {
+  return apiClient<{ message: string }>("/auth/esqueci-senha", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function resetPassword(
+  token: string,
+  novaSenha: string
+): Promise<{ message: string }> {
+  return apiClient<{ message: string }>("/auth/redefinir-senha", {
+    method: "POST",
+    body: JSON.stringify({ token, novaSenha }),
+  });
+}

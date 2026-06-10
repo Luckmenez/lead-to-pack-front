@@ -40,11 +40,11 @@ function SupplierCard({
   supplier: SupplierItem;
   onViewProfile: () => void;
 }) {
-  const categorias = Array.isArray(supplier.categoriasProdutos)
-    ? supplier.categoriasProdutos
-    : [];
+  const categorias = Array.isArray(supplier.categoriasProdutos) ? supplier.categoriasProdutos : [];
   const materiais = Array.isArray(supplier.materiais) ? supplier.materiais : [];
-  const tags = [...new Set([...categorias, ...materiais])].slice(0, 5);
+  const servicos = Array.isArray(supplier.servicos) ? supplier.servicos : [];
+  const setores = Array.isArray(supplier.setores) ? supplier.setores : [];
+  const tags = [...new Set([...categorias, ...materiais, ...servicos, ...setores])].slice(0, 5);
   const descricao =
     supplier.descricaoInstitucional?.slice(0, 180) +
     (supplier.descricaoInstitucional?.length > 180 ? "..." : "");
@@ -137,13 +137,11 @@ function ProfessionalCard({
   professional: ProfessionalItem;
   onViewProfile: () => void;
 }) {
-  const categorias = Array.isArray(professional.categoriasProdutos)
-    ? professional.categoriasProdutos
-    : [];
-  const materiais = Array.isArray(professional.materiais)
-    ? professional.materiais
-    : [];
-  const tags = [...new Set([...categorias, ...materiais])].slice(0, 5);
+  const categorias = Array.isArray(professional.categoriasProdutos) ? professional.categoriasProdutos : [];
+  const materiais = Array.isArray(professional.materiais) ? professional.materiais : [];
+  const servicos = Array.isArray(professional.servicos) ? professional.servicos : [];
+  const setores = Array.isArray(professional.setores) ? professional.setores : [];
+  const tags = [...new Set([...categorias, ...materiais, ...servicos, ...setores])].slice(0, 5);
   const descricao =
     professional.descricaoInstitucional?.slice(0, 180) +
     (professional.descricaoInstitucional?.length > 180 ? "..." : "");
