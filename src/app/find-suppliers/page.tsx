@@ -22,7 +22,14 @@ import {
   DiscoveryProfileModal,
   type DiscoveryProfileModalState,
 } from "@/components/discovery/DiscoveryProfileModal";
-import { MATERIAIS_FILTRO_OPCOES } from "@/lib/catalog/materiaisCadastro";
+import { getCategoriasFiltroPorPerfil } from "@/lib/catalog/materiaisCadastro";
+
+type DiscoveryProfileType = "fornecedor" | "profissional";
+
+const PROFILE_TYPE_OPTIONS: { value: DiscoveryProfileType; label: string }[] = [
+  { value: "fornecedor", label: "Fornecedor" },
+  { value: "profissional", label: "Profissional do setor" },
+];
 
 type ListResponse<T> = {
   data: T[];
@@ -238,11 +245,14 @@ export default function FindSuppliersPage() {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
   const [materialInput, setMaterialInput] = useState("");
+  const [profileTypeInput, setProfileTypeInput] =
+    useState<DiscoveryProfileType>("fornecedor");
   const [appliedSearch, setAppliedSearch] = useState("");
   const [appliedMaterial, setAppliedMaterial] = useState("");
+  const [appliedProfileType, setAppliedProfileType] =
+    useState<DiscoveryProfileType>("fornecedor");
   const [hasSearched, setHasSearched] = useState(true);
-  const [pageSuppliers, setPageSuppliers] = useState(1);
-  const [pageProfessionals, setPageProfessionals] = useState(1);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [supplierData, setSupplierData] =
     useState<ListResponse<SupplierItem> | null>(null);
@@ -269,32 +279,37 @@ export default function FindSuppliersPage() {
       search: appliedSearch || undefined,
       material: appliedMaterial || undefined,
       limit: 9,
+      page,
+    };
+
+    const emptyList = {
+      data: [],
+      total: 0,
+      page: 1,
+      limit: 9,
+      totalPages: 0,
     };
 
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [sup, prof] = await Promise.all([
-          getSuppliers({ ...params, page: pageSuppliers }),
-          getProfessionals({ ...params, page: pageProfessionals }),
-        ]);
-        setSupplierData(sup);
-        setProfessionalData(prof);
+        if (appliedProfileType === "fornecedor") {
+          const sup = await getSuppliers(params);
+          setSupplierData(sup);
+          setProfessionalData(null);
+        } else {
+          const prof = await getProfessionals(params);
+          setProfessionalData(prof);
+          setSupplierData(null);
+        }
       } catch {
-        setSupplierData({
-          data: [],
-          total: 0,
-          page: 1,
-          limit: 9,
-          totalPages: 0,
-        });
-        setProfessionalData({
-          data: [],
-          total: 0,
-          page: 1,
-          limit: 9,
-          totalPages: 0,
-        });
+        if (appliedProfileType === "fornecedor") {
+          setSupplierData(emptyList);
+          setProfessionalData(null);
+        } else {
+          setProfessionalData(emptyList);
+          setSupplierData(null);
+        }
       } finally {
         setLoading(false);
       }
@@ -303,20 +318,26 @@ export default function FindSuppliersPage() {
     fetchData();
   }, [
     user,
-    pageSuppliers,
-    pageProfessionals,
+    page,
     appliedSearch,
     appliedMaterial,
+    appliedProfileType,
     hasSearched,
   ]);
+
+  const handleProfileTypeChange = (value: string) => {
+    const next = value as DiscoveryProfileType;
+    setProfileTypeInput(next);
+    setMaterialInput("");
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setAppliedSearch(searchInput);
     setAppliedMaterial(materialInput);
+    setAppliedProfileType(profileTypeInput);
     setHasSearched(true);
-    setPageSuppliers(1);
-    setPageProfessionals(1);
+    setPage(1);
   };
 
   if (authLoading || !user || user.tipo !== "comprador") {
@@ -327,19 +348,19 @@ export default function FindSuppliersPage() {
     );
   }
 
-  const materialOptions = MATERIAIS_FILTRO_OPCOES.map((m) => ({
-    value: m,
-    label: m,
-  }));
+  const categoryOptions = getCategoriasFiltroPorPerfil(profileTypeInput).filter(
+    (opt) => opt.value !== "",
+  );
 
-  const hasSuppliers = supplierData && supplierData.data.length > 0;
-  const hasProfessionals = professionalData && professionalData.data.length > 0;
-  const bothEmpty =
-    !loading &&
-    supplierData &&
-    professionalData &&
-    !hasSuppliers &&
-    !hasProfessionals;
+  const isFornecedor = appliedProfileType === "fornecedor";
+  const activeData = isFornecedor ? supplierData : professionalData;
+  const hasResults = activeData && activeData.data.length > 0;
+  const isEmpty = !loading && activeData && !hasResults;
+
+  const searchPlaceholder =
+    profileTypeInput === "fornecedor"
+      ? "Busque por nome fantasia ou razão social..."
+      : "Busque por apelido ou nome completo...";
 
   return (
     <main className="mx-auto w-full max-w-[1200px] flex-1 px-6 py-10">
@@ -350,15 +371,19 @@ export default function FindSuppliersPage() {
       <DiscoverySearchSection
         title="Encontre Fornecedores de Embalagens"
         subtitle="Conecte-se com os melhores fornecedores e profissionais do setor"
-        searchPlaceholder="Busque por nome da empresa, produto ou material..."
+        searchPlaceholder={searchPlaceholder}
         searchValue={searchInput}
         onSearchChange={setSearchInput}
         onSubmit={handleSearch}
+        showProfileTypeFilter
+        profileTypeValue={profileTypeInput}
+        onProfileTypeChange={handleProfileTypeChange}
+        profileTypeOptions={PROFILE_TYPE_OPTIONS}
         showCategoryFilter
         categoryValue={materialInput}
         onCategoryChange={setMaterialInput}
-        categoryOptions={materialOptions}
-        categoryPlaceholder="Todos"
+        categoryOptions={categoryOptions}
+        categoryPlaceholder="Todas as categorias"
       />
 
       {!hasSearched ? (
@@ -373,76 +398,70 @@ export default function FindSuppliersPage() {
         <div className="flex min-h-[200px] items-center justify-center">
           <p className="text-muted-foreground">Carregando resultados...</p>
         </div>
-      ) : bothEmpty ? (
+      ) : isEmpty ? (
         <div className="rounded-xl border bg-white p-12 text-center">
           <p className="text-muted-foreground">
             Nenhum resultado encontrado. Tente ajustar sua busca ou filtros.
           </p>
         </div>
-      ) : (
-        <>
-          {hasSuppliers && supplierData && (
-            <section className="mb-10">
-              <h2 className="mb-4 font-sans text-lg font-semibold text-[#284161]">
-                Fornecedores
-              </h2>
-              <DiscoveryResultsCount
-                total={supplierData.total}
-                entityLabel="fornecedores"
+      ) : isFornecedor && supplierData ? (
+        <section>
+          <h2 className="mb-4 font-sans text-lg font-semibold text-[#284161]">
+            Fornecedores
+          </h2>
+          <DiscoveryResultsCount
+            total={supplierData.total}
+            entityLabel="fornecedores"
+          />
+          <div className="flex flex-col gap-4">
+            {supplierData.data.map((supplier) => (
+              <SupplierCard
+                key={supplier.id}
+                supplier={supplier}
+                onViewProfile={() =>
+                  setProfileModal({ variant: "supplier", item: supplier })
+                }
               />
-              <div className="flex flex-col gap-4">
-                {supplierData.data.map((supplier) => (
-                  <SupplierCard
-                    key={supplier.id}
-                    supplier={supplier}
-                    onViewProfile={() =>
-                      setProfileModal({ variant: "supplier", item: supplier })
-                    }
-                  />
-                ))}
-              </div>
-              <PaginationBar
-                page={supplierData.page}
-                totalPages={supplierData.totalPages}
-                onPageChange={setPageSuppliers}
-                ariaLabel="Paginação fornecedores"
+            ))}
+          </div>
+          <PaginationBar
+            page={supplierData.page}
+            totalPages={supplierData.totalPages}
+            onPageChange={setPage}
+            ariaLabel="Paginação fornecedores"
+          />
+        </section>
+      ) : professionalData ? (
+        <section>
+          <h2 className="mb-4 font-sans text-lg font-semibold text-[#284161]">
+            Profissionais do setor
+          </h2>
+          <DiscoveryResultsCount
+            total={professionalData.total}
+            entityLabel="profissionais"
+          />
+          <div className="flex flex-col gap-4">
+            {professionalData.data.map((p) => (
+              <ProfessionalCard
+                key={p.id}
+                professional={p}
+                onViewProfile={() =>
+                  setProfileModal({
+                    variant: "professional",
+                    item: p,
+                  })
+                }
               />
-            </section>
-          )}
-
-          {hasProfessionals && professionalData && (
-            <section>
-              <h2 className="mb-4 font-sans text-lg font-semibold text-[#284161]">
-                Profissionais do setor
-              </h2>
-              <DiscoveryResultsCount
-                total={professionalData.total}
-                entityLabel="profissionais"
-              />
-              <div className="flex flex-col gap-4">
-                {professionalData.data.map((p) => (
-                  <ProfessionalCard
-                    key={p.id}
-                    professional={p}
-                    onViewProfile={() =>
-                      setProfileModal({
-                        variant: "professional",
-                        item: p,
-                      })
-                    }
-                  />
-                ))}
-              </div>
-              <PaginationBar
-                page={professionalData.page}
-                totalPages={professionalData.totalPages}
-                onPageChange={setPageProfessionals}
-                ariaLabel="Paginação profissionais"
-              />
-            </section>
-          )}
-        </>
-      )}
+            ))}
+          </div>
+          <PaginationBar
+            page={professionalData.page}
+            totalPages={professionalData.totalPages}
+            onPageChange={setPage}
+            ariaLabel="Paginação profissionais"
+          />
+        </section>
+      ) : null}
     </main>
   );
 }

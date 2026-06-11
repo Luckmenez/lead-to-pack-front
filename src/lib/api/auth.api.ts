@@ -74,9 +74,6 @@ export type RegisterFornecedorRequest = {
   razaoSocial: string;
   nomeFantasia: string;
   categoriasProdutos: string[];
-  materiais: string[];
-  servicos: string[];
-  setores: string[];
   descricaoInstitucional: string;
   formaPagamento: "cartao" | "boleto" | "pix";
   cidade: string;
@@ -116,9 +113,6 @@ export type RegisterProfissionalRequest = {
   emailPessoal: string;
   tipoEmpresa: "mei" | "lucro_presumido" | "simples_nacional";
   categoriasProdutos: string[];
-  materiais: string[];
-  servicos: string[];
-  setores: string[];
   descricaoInstitucional: string;
   formaPagamento: "cartao" | "boleto" | "pix";
   website?: string;

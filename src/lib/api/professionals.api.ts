@@ -6,9 +6,6 @@ export type ProfessionalItem = {
   apelido: string;
   descricaoInstitucional: string;
   categoriasProdutos: string[];
-  materiais: string[];
-  servicos: string[];
-  setores: string[];
   website?: string | null;
   redeSocial?: string | null;
 };
