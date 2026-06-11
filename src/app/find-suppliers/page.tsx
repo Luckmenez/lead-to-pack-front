@@ -42,8 +42,7 @@ function SupplierCard({
   const categorias = Array.isArray(supplier.categoriasProdutos)
     ? supplier.categoriasProdutos
     : [];
-  const materiais = Array.isArray(supplier.materiais) ? supplier.materiais : [];
-  const tags = [...new Set([...categorias, ...materiais])].slice(0, 5);
+  const tags = categorias.slice(0, 5);
   const descricao =
     supplier.descricaoInstitucional?.slice(0, 180) +
     (supplier.descricaoInstitucional?.length > 180 ? "..." : "");
@@ -139,10 +138,7 @@ function ProfessionalCard({
   const categorias = Array.isArray(professional.categoriasProdutos)
     ? professional.categoriasProdutos
     : [];
-  const materiais = Array.isArray(professional.materiais)
-    ? professional.materiais
-    : [];
-  const tags = [...new Set([...categorias, ...materiais])].slice(0, 5);
+  const tags = categorias.slice(0, 5);
   const descricao =
     professional.descricaoInstitucional?.slice(0, 180) +
     (professional.descricaoInstitucional?.length > 180 ? "..." : "");
@@ -362,7 +358,7 @@ export default function FindSuppliersPage() {
         categoryValue={materialInput}
         onCategoryChange={setMaterialInput}
         categoryOptions={materialOptions}
-        categoryPlaceholder="Todos os materiais"
+        categoryPlaceholder="Todos"
       />
 
       {!hasSearched ? (

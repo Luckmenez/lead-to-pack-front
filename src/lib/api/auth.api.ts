@@ -114,6 +114,7 @@ export type RegisterProfissionalRequest = {
   telefonePessoal: string;
   whatsappPessoal: string;
   emailPessoal: string;
+  tipoEmpresa: "mei" | "lucro_presumido" | "simples_nacional";
   categoriasProdutos: string[];
   materiais: string[];
   servicos: string[];

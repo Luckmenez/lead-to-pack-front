@@ -39,10 +39,7 @@ export const supplierRegistrationSchema = z.object({
 
     tipoEmpresa: z.enum(["mei", "lucro_presumido", "simples_nacional"], { message: "Selecione o tipo de empresa" }),
 
-    categoriasProdutos: z.array(z.string()).min(1, "Selecione ao menos 1 Produto"),
-    materiais: z.array(z.string()).min(1, "Selecione ao menos 1 material"),
-    servicos: z.array(z.string()).min(1, "Selecione ao menos 1 serviço"),
-    setores: z.array(z.string()).min(1, "Selecione ao menos 1 setor"),
+    categoriasProdutos: z.array(z.string()).min(1, "Selecione ao menos 1 categoria"),
 
     descricaoInstitucional: z
         .string({ message: "Campo obrigatório" })

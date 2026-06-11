@@ -19,11 +19,8 @@ function normalizeStringArray(value: unknown): string[] {
 
 function tagsProdutosCadastrados(item: {
   categoriasProdutos: unknown;
-  materiais: unknown;
 }): string[] {
-  const categorias = normalizeStringArray(item.categoriasProdutos);
-  const materiais = normalizeStringArray(item.materiais);
-  return [...new Set([...categorias, ...materiais])];
+  return normalizeStringArray(item.categoriasProdutos);
 }
 
 export type DiscoveryProfileModalState =
@@ -142,7 +139,7 @@ export function DiscoveryProfileModal({ state, onClose }: Props) {
 
           <section>
             <h3 className="mb-3 text-sm font-bold text-[#0B2443]">
-              Categorias e materiais cadastrados:
+              Categorias cadastradas:
             </h3>
             {tagsCadastro.length > 0 ? (
               <div className="flex flex-wrap gap-2">

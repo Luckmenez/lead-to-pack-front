@@ -21,15 +21,14 @@ import {
 } from "../schemas/profRegistration.schema"
 import { maskCPF, maskPhonePersonal, normalizeEmail } from "@/utils/masks"
 import { registerProfissional } from "@/lib/api/auth.api"
+import { TIPO_EMPRESA_OPCOES } from "@/lib/constants/tipoEmpresa"
+import { PROFISSIONAL_CATEGORIAS } from "@/lib/catalog/categoriasCadastro"
 
 export default function ProfRegistrationPage() {
     const form = useForm<ProfRegistrationFormData>({
         resolver: zodResolver(profRegistrationSchema),
         defaultValues: {
             categoriasProdutos: [],
-            materiais: [],
-            servicos: [],
-            setores: [],
             portfolio: [],
             senha: "",
             confirmarSenha: "",
@@ -58,10 +57,11 @@ export default function ProfRegistrationPage() {
                 telefonePessoal: String(data.telefonePessoal).replace(/\D/g, ""),
                 whatsappPessoal: String(data.whatsappPessoal).replace(/\D/g, ""),
                 emailPessoal: data.emailPessoal,
+                tipoEmpresa: data.tipoEmpresa,
                 categoriasProdutos: data.categoriasProdutos,
-                materiais: data.materiais,
-                servicos: data.servicos,
-                setores: data.setores,
+                materiais: [],
+                servicos: [],
+                setores: [],
                 descricaoInstitucional: data.descricaoInstitucional,
                 formaPagamento: data.formaPagamento,
                 website: data.website || "",
@@ -175,6 +175,24 @@ export default function ProfRegistrationPage() {
                         onChangeCustom={normalizeEmail}
                     />
 
+                    <div className="space-y-1 md:col-span-2">
+                        <label className="text-sm font-medium">Tipo de Empresa*</label>
+                        <select
+                            {...register("tipoEmpresa")}
+                            className={`w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4F83A6] ${errors.tipoEmpresa ? "border-red-500" : "border-input"}`}
+                        >
+                            <option value="">Selecione o tipo de empresa</option>
+                            {TIPO_EMPRESA_OPCOES.map((opcao) => (
+                                <option key={opcao.value} value={opcao.value}>
+                                    {opcao.label}
+                                </option>
+                            ))}
+                        </select>
+                        {errors.tipoEmpresa && (
+                            <p className="text-xs text-red-500">{errors.tipoEmpresa.message}</p>
+                        )}
+                    </div>
+
                 </div>
 
                 <hr className="my-8" />
@@ -183,77 +201,11 @@ export default function ProfRegistrationPage() {
                     <h2 className="text-sm font-semibold">Selecione os itens de interesse:</h2>
 
                     <InterestGroup
-                        title="Categorias de Produtos"
+                        title="Categorias"
                         name="categoriasProdutos"
-                        items={[
-                            "Embalagens Primárias",
-                            "Embalagens Secundárias",
-                            "Embalagens Terciárias",
-                            "Acessórios e Componentes",
-                            "Etiquetas e Rótulos",
-                            "Embalagens Sustentáveis/Recicladas",
-                        ]}
+                        items={[...PROFISSIONAL_CATEGORIAS]}
                         control={form.control}
                         error={errors.categoriasProdutos?.message}
-                    />
-
-                    <InterestGroup
-                        title="Materiais"
-                        name="materiais"
-                        items={[
-                            "Papel / Papelão",
-                            "Plásticos",
-                            "Vidro",
-                            "Metal e Alumínio",
-                            "Madeira / Bambu",
-                            "Tecido / Têxtil",
-                            "Biopolímeros / Compostáveis",
-                            "Multicamadas / Laminados",
-                            "Rótulos e Etiquetas",
-                            "Outros (Cerâmica, EPS)",
-                        ]}
-                        control={form.control}
-                        error={errors.materiais?.message}
-                    />
-
-                    <InterestGroup
-                        title="Serviços"
-                        name="servicos"
-                        items={[
-                            "Design & Desenvolvimento",
-                            "Prototipagem e Amostras",
-                            "Impressão e Personalização",
-                            "Produção Própria",
-                            "Private Label",
-                            "Fornecimento Sob Demanda (JIT)",
-                            "Consultoria em Embalagens",
-                            "Logística e Armazenagem",
-                            "Reciclagem e Pós-consumo",
-                        ]}
-                        control={form.control}
-                        error={errors.servicos?.message}
-                    />
-
-                    <InterestGroup
-                        title="Setores"
-                        name="setores"
-                        items={[
-                            "Alimentos & Bebidas",
-                            "Farmacêutico & Hospitalar",
-                            "Cosmético & Higiene",
-                            "Editorial / Papelaria",
-                            "Domissanitários",
-                            "Pet",
-                            "E-commerce & Logística",
-                            "Industrial & Químico",
-                            "Moda & Têxtil",
-                            "Eletrônicos",
-                            "Orgânicos",
-                            "Bebidas Alcoólicas",
-                            "Outros",
-                        ]}
-                        control={form.control}
-                        error={errors.setores?.message}
                     />
                 </section>
 
