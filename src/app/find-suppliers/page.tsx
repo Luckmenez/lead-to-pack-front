@@ -13,6 +13,7 @@ import {
   EnvelopeSimpleIcon,
   MapPinIcon,
   FileTextIcon,
+  MagnifyingGlassIcon,
 } from "@phosphor-icons/react";
 import {
   DiscoveryResultsCount,
@@ -268,7 +269,7 @@ export default function FindSuppliersPage() {
       return;
     }
     if (user.tipo !== "comprador") {
-      router.replace("/find-buyers");
+      router.replace("/my-profile");
     }
   }, [user, authLoading, router]);
 
@@ -387,11 +388,16 @@ export default function FindSuppliersPage() {
       />
 
       {!hasSearched ? (
-        <div className="rounded-xl border border-[#E2E8F0] bg-white p-12 text-center">
-          <p className="text-[#757575]">
-            Preencha os campos acima e clique em{" "}
-            <span className="font-semibold text-[#284161]">Buscar</span> para
-            exibir fornecedores e profissionais cadastrados.
+        <div className="rounded-xl border border-[#E2E8F0] bg-white p-12 text-center shadow-sm">
+          <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#EEF6DB]">
+            <MagnifyingGlassIcon size={28} weight="bold" color="#9CCB3B" />
+          </span>
+          <h3 className="mb-2 text-base font-semibold text-[#0B2443]">
+            Encontre seu fornecedor ideal
+          </h3>
+          <p className="mx-auto max-w-sm text-sm text-[#757575]">
+            Use a busca acima para filtrar por nome, produto, material ou
+            especialidade. Os resultados aparecem aqui.
           </p>
         </div>
       ) : loading ? (

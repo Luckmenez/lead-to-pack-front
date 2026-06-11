@@ -1,19 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import { Controller, useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { ArrowLeftIcon, BriefcaseIcon } from "@phosphor-icons/react"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowLeftIcon, BriefcaseIcon } from "@phosphor-icons/react";
 
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { FormField } from "@/components/ui/FormField"
-import { PasswordField } from "@/components/ui/PasswordField"
-import { PortfolioDropzone } from "@/components/Dropzone"
-import { InterestGroup } from "@/app/buyer-registration/buyer-registration-component/InterestGroup"
-import { ProgressBar } from "@/app/supplier-registration/supplier-registration-component/progressBar"
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { FormField } from "@/components/ui/FormField";
+import { PasswordField } from "@/components/ui/PasswordField";
+import { PortfolioDropzone } from "@/components/Dropzone";
+import { InterestGroup } from "@/app/buyer-registration/buyer-registration-component/InterestGroup";
+import { ProgressBar } from "@/app/supplier-registration/supplier-registration-component/progressBar";
 
 import {
     ProfRegistrationFormData,
@@ -254,138 +254,89 @@ export default function ProfRegistrationPage() {
                         </>
                     )}
                 />
+              )}
+            />
+            <label>
+              Li e estou de acordo com os termos de uso e política de
+              privacidade
+            </label>
+          </div>
 
-                <hr className="my-8" />
+          {errors.aceitarPrivacidade && (
+            <p className="text-xs text-red-500">
+              {errors.aceitarPrivacidade.message}
+            </p>
+          )}
 
-                <section className="space-y-4">
-                    <h2 className="text-sm font-semibold">
-                        Defina uma senha de 8 dígitos para realizar seu login:
-                    </h2>
+          <div className="flex cursor-pointer items-start gap-2">
+            <Controller
+              control={form.control}
+              name="aceitarCookies"
+              render={({ field }) => (
+                <Checkbox
+                  checked={Boolean(field.value)}
+                  onCheckedChange={(v) => field.onChange(Boolean(v))}
+                />
+              )}
+            />
+            <label>
+              Li e estou de acordo com a política de cookies e código de conduta
+            </label>
+          </div>
 
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                        <PasswordField
-                            label="Senha*"
-                            placeholder="Ex: Xpto1234*"
-                            register={register}
-                            name="senha"
-                            error={errors.senha?.message}
-                        />
+          {errors.aceitarCookies && (
+            <p className="text-xs text-red-500">
+              {errors.aceitarCookies.message}
+            </p>
+          )}
+        </div>
 
-                        <PasswordField
-                            label="Confirme sua senha*"
-                            placeholder="xxxxxxxxx"
-                            register={register}
-                            name="confirmarSenha"
-                            error={errors.confirmarSenha?.message}
-                        />
-                    </div>
-                </section>
+        <hr className="my-8" />
 
-                <hr className="my-8" />
+        <div className="space-y-2">
+          <h3 className="text-sm font-semibold">
+            Selecione a forma de pagamento:
+          </h3>
 
-                <div className="mb-4 space-y-1 text-sm">
-                    <a href="#" className="block text-blue-600 hover:underline">
-                        • Termos de Uso
-                    </a>
+          <div className="pb-2 text-sm font-light">
+            R$ 000,00/mês - Cancele quando quiser
+          </div>
 
-                    <a href="#" className="block text-blue-600 hover:underline">
-                        • Política de Privacidade
-                    </a>
+          {(["cartao", "boleto", "pix"] as const).map((p) => (
+            <label
+              key={p}
+              className="flex cursor-pointer items-center gap-2 text-sm"
+            >
+              <input type="radio" value={p} {...register("formaPagamento")} />
+              {p === "cartao" && "Cartão de crédito"}
+              {p === "boleto" && "Boleto bancário"}
+              {p === "pix" && "PIX"}
+            </label>
+          ))}
 
-                    <a href="#" className="block text-blue-600 hover:underline">
-                        • Política de Cookies
-                    </a>
+          {errors.formaPagamento && (
+            <p className="text-xs text-red-500">
+              {errors.formaPagamento.message}
+            </p>
+          )}
+        </div>
 
-                    <a href="#" className="block text-blue-600 hover:underline">
-                        • Código de Conduta
-                    </a>
-                </div>
+        <hr className="my-8" />
 
-                <div className="space-y-3 pt-4 text-sm">
-                    <div className="flex cursor-pointer items-start gap-2">
-                        <Controller
-                            control={form.control}
-                            name="aceitarPrivacidade"
-                            render={({ field }) => (
-                                <Checkbox
-                                    checked={Boolean(field.value)}
-                                    onCheckedChange={v => field.onChange(Boolean(v))}
-                                />
-                            )}
-                        />
-                        <label>
-                            Li e estou de acordo com os termos de uso e política de privacidade
-                        </label>
-                    </div>
+        {submitError && (
+          <p className="mb-4 text-sm text-red-500">{submitError}</p>
+        )}
 
-                    {errors.aceitarPrivacidade && (
-                        <p className="text-xs text-red-500">{errors.aceitarPrivacidade.message}</p>
-                    )}
-
-                    <div className="flex cursor-pointer items-start gap-2">
-                        <Controller
-                            control={form.control}
-                            name="aceitarCookies"
-                            render={({ field }) => (
-                                <Checkbox
-                                    checked={Boolean(field.value)}
-                                    onCheckedChange={v => field.onChange(Boolean(v))}
-                                />
-                            )}
-                        />
-                        <label>
-                            Li e estou de acordo com a política de cookies e código de conduta
-                        </label>
-                    </div>
-
-                    {errors.aceitarCookies && (
-                        <p className="text-xs text-red-500">{errors.aceitarCookies.message}</p>
-                    )}
-                </div>
-
-                <hr className="my-8" />
-
-                <div className="space-y-2">
-                    <h3 className="text-sm font-semibold">Selecione a forma de pagamento:</h3>
-
-                    <div className="pb-2 text-sm font-light">
-                        R$ 000,00/mês - Cancele quando quiser
-                    </div>
-
-                    {(["cartao", "boleto", "pix"] as const).map(p => (
-                        <label key={p} className="flex cursor-pointer items-center gap-2 text-sm">
-                            <input
-                                type="radio"
-                                value={p}
-                                {...register("formaPagamento")}
-                            />
-                            {p === "cartao" && "Cartão de crédito"}
-                            {p === "boleto" && "Boleto bancário"}
-                            {p === "pix" && "PIX"}
-                        </label>
-                    ))}
-
-                    {errors.formaPagamento && (
-                        <p className="text-xs text-red-500">{errors.formaPagamento.message}</p>
-                    )}
-                </div>
-
-                <hr className="my-8" />
-
-                {submitError && (
-                    <p className="mb-4 text-sm text-red-500">{submitError}</p>
-                )}
-
-                <div className="mt-8 flex justify-center">
-                    <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="rounded-full bg-[#5B86A8] px-10 hover:bg-[#4A748F]"
-                    >
-                        {isSubmitting ? "Cadastrando..." : "Avançar para pagamento"}
-                    </Button>
-                </div>
-            </form>
-        </main>
-    )
+        <div className="mt-8 flex justify-center">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="rounded-full bg-[#5B86A8] px-10 hover:bg-[#4A748F]"
+          >
+            {isSubmitting ? "Cadastrando..." : "Avançar para pagamento"}
+          </Button>
+        </div>
+      </form>
+    </main>
+  );
 }

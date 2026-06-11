@@ -8,6 +8,7 @@ export type ProfessionalItem = {
   categoriasProdutos: string[];
   website?: string | null;
   redeSocial?: string | null;
+  portfolioUrls: string[];
 };
 
 export type GetProfessionalsParams = {
