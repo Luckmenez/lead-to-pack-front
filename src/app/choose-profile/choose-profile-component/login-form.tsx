@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import loginBg from "../../../../public/login-bg.jpg";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -62,10 +63,10 @@ export function LoginForm() {
         router.push("/find-suppliers");
       } else if (res.tipo === "fornecedor" && res.fornecedor) {
         loginFornecedor(res.accessToken, res.fornecedor);
-        router.push("/find-buyers");
+        router.push("/my-profile");
       } else if (res.tipo === "profissional" && res.profissional) {
         loginProfissional(res.accessToken, res.profissional);
-        router.push("/find-buyers");
+        router.push("/my-profile");
       }
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : "Erro ao fazer login");
@@ -85,7 +86,7 @@ export function LoginForm() {
       router.push("/find-suppliers");
     } else if (res.tipo === "fornecedor" && res.fornecedor) {
       loginFornecedor(res.accessToken, res.fornecedor);
-      router.push("/find-buyers");
+      router.push("/my-profile");
     }
   };
 
@@ -96,117 +97,122 @@ export function LoginForm() {
         onClose={() => setProfileChoice(null)}
         onChoose={handleProfileChoice}
       />
-    <section className="relative mt-20 w-full overflow-hidden">
-      <div className="absolute inset-0">
-        <Image
-          src={loginBg}
-          alt="Embalagens sustentáveis"
-          fill
-          className="object-cover"
-          priority
-        />
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.15) 40%, rgba(255,255,255,0.85) 60%, rgba(255,255,255,1) 72%)",
-          }}
-        />
-      </div>
-
-      <div className="relative mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <div className="ml-auto w-full max-w-2xl p-4 sm:max-w-3xl sm:p-6">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 items-center gap-4 sm:grid-cols-[1fr_1fr_auto] sm:gap-3">
-              <div className="min-w-0">
-                <div className="relative">
-                  <EnvelopeSimple
-                    size={18}
-                    weight="fill"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <Input
-                    type="email"
-                    autoComplete="email"
-                    placeholder="E-mail"
-                    aria-label="E-mail"
-                    className="pl-10 border border-gray-300 bg-white/95 focus:border-[#5B86A8]"
-                    {...register("email")}
-                  />
-                </div>
-                {errors.email && (
-                  <p className="mt-1 text-xs text-red-500">
-                    {errors.email.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="min-w-0">
-                <div className="relative">
-                  <LockIcon
-                    size={18}
-                    weight="fill"
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((p) => !p)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    aria-label={
-                      showPassword ? "Ocultar senha" : "Mostrar senha"
-                    }
-                  >
-                    {showPassword ? (
-                      <EyeSlashIcon size={18} />
-                    ) : (
-                      <EyeIcon size={18} />
-                    )}
-                  </button>
-                  <Input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Senha"
-                    aria-label="Senha"
-                    className="pl-10 pr-10 border border-gray-300 bg-white/95 focus:border-[#5B86A8]"
-                    {...register("senha")}
-                  />
-                </div>
-                {errors.senha && (
-                  <p className="mt-1 text-xs text-red-500">
-                    {errors.senha.message}
-                  </p>
-                )}
-              </div>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="h-10 min-w-[120px] shrink-0 rounded-full bg-[#5B86A8] font-semibold hover:bg-[#4A748F] cursor-pointer disabled:opacity-70 sm:min-w-[140px]"
-              >
-                {isSubmitting ? "Entrando..." : "Entrar"}
-              </Button>
-            </div>
-
-            {submitError && (
-              <p className="text-sm text-red-500">{submitError}</p>
-            )}
-
-            <div className="mt-4 flex justify-end">
-              <div className="w-full max-w-[300px] text-right sm:w-[300px]">
-                <a
-                  href="#"
-                  className="cursor-pointer text-sm text-blue-600 hover:underline"
-                >
-                  Esqueci a senha
-                </a>
-
-                <div className="mt-1 text-xs text-muted-foreground">
-                  Política de Privacidade / Coleta de Dados / LGPD
-                </div>
-              </div>
-            </div>
-          </form>
+      <section className="relative mt-20 w-full overflow-hidden">
+        <div className="absolute inset-0">
+          <Image
+            src={loginBg}
+            alt="Embalagens sustentáveis"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.15) 40%, rgba(255,255,255,0.85) 60%, rgba(255,255,255,1) 72%)",
+            }}
+          />
         </div>
-      </div>
-    </section>
+
+        <div className="relative mx-auto max-w-6xl px-4 py-12 sm:px-6">
+          <div className="ml-auto w-fit p-4 sm:p-6">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              autoComplete="off"
+              className="space-y-4"
+            >
+              <div className="flex flex-row items-start gap-3">
+                <div className="w-48">
+                  <div className="relative">
+                    <EnvelopeSimple
+                      size={18}
+                      weight="fill"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    />
+                    <Input
+                      type="email"
+                      autoComplete="off"
+                      placeholder="E-mail"
+                      aria-label="E-mail"
+                      className="pl-10 border border-gray-300 bg-white/95 focus:border-[#5B86A8]"
+                      {...register("email")}
+                    />
+                  </div>
+                  {errors.email && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.email.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="w-48">
+                  <div className="relative">
+                    <LockIcon
+                      size={18}
+                      weight="fill"
+                      className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((p) => !p)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      aria-label={
+                        showPassword ? "Ocultar senha" : "Mostrar senha"
+                      }
+                    >
+                      {showPassword ? (
+                        <EyeSlashIcon size={18} />
+                      ) : (
+                        <EyeIcon size={18} />
+                      )}
+                    </button>
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
+                      placeholder="Senha"
+                      aria-label="Senha"
+                      className="pl-10 pr-10 border border-gray-300 bg-white/95 focus:border-[#5B86A8]"
+                      {...register("senha")}
+                    />
+                  </div>
+                  {errors.senha && (
+                    <p className="mt-1 text-xs text-red-500">
+                      {errors.senha.message}
+                    </p>
+                  )}
+                </div>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="h-10 min-w-[120px] shrink-0 rounded-full bg-[#5B86A8] font-semibold hover:bg-[#4A748F] cursor-pointer disabled:opacity-70 sm:min-w-[140px]"
+                >
+                  {isSubmitting ? "Entrando..." : "Entrar"}
+                </Button>
+              </div>
+
+              {submitError && (
+                <p className="text-sm text-red-500">{submitError}</p>
+              )}
+
+              <div className="mt-4 flex justify-end">
+                <div className="w-full max-w-[300px] text-right sm:w-[300px]">
+                  <Link
+                    href="/forgot-password"
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    Esqueci a senha
+                  </Link>
+
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    Política de Privacidade / Coleta de Dados / LGPD
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
     </>
   );
 }
