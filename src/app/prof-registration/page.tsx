@@ -254,44 +254,95 @@ export default function ProfRegistrationPage() {
                         </>
                     )}
                 />
-              )}
-            />
-            <label>
-              Li e estou de acordo com os termos de uso e política de
-              privacidade
-            </label>
-          </div>
 
-          {errors.aceitarPrivacidade && (
-            <p className="text-xs text-red-500">
-              {errors.aceitarPrivacidade.message}
-            </p>
-          )}
+                <hr className="my-8" />
 
-          <div className="flex cursor-pointer items-start gap-2">
-            <Controller
-              control={form.control}
-              name="aceitarCookies"
-              render={({ field }) => (
-                <Checkbox
-                  checked={Boolean(field.value)}
-                  onCheckedChange={(v) => field.onChange(Boolean(v))}
-                />
-              )}
-            />
-            <label>
-              Li e estou de acordo com a política de cookies e código de conduta
-            </label>
-          </div>
+                <section className="space-y-4">
+                    <h2 className="text-sm font-semibold">Crie sua senha de acesso</h2>
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <PasswordField
+                            label="Senha*"
+                            placeholder="Ex: Xplz@1234"
+                            register={register}
+                            name="senha"
+                            error={errors.senha?.message}
+                        />
+                        <PasswordField
+                            label="Confirme sua senha*"
+                            placeholder="Confirme sua senha"
+                            register={register}
+                            name="confirmarSenha"
+                            error={errors.confirmarSenha?.message}
+                        />
+                    </div>
+                </section>
 
-          {errors.aceitarCookies && (
-            <p className="text-xs text-red-500">
-              {errors.aceitarCookies.message}
-            </p>
-          )}
-        </div>
+                <hr className="my-8" />
 
-        <hr className="my-8" />
+                <div className="mb-4 space-y-1 text-sm">
+                    <a href="#" className="block text-blue-600 hover:underline">
+                        • Termos de Uso
+                    </a>
+                    <a href="#" className="block text-blue-600 hover:underline">
+                        • Política de Privacidade
+                    </a>
+                    <a href="#" className="block text-blue-600 hover:underline">
+                        • Política de Cookies
+                    </a>
+                    <a href="#" className="block text-blue-600 hover:underline">
+                        • Código de Conduta
+                    </a>
+                </div>
+
+                <div className="space-y-3 pt-4 text-sm">
+                    <div className="flex cursor-pointer items-start gap-2">
+                        <Controller
+                            control={form.control}
+                            name="aceitarPrivacidade"
+                            render={({ field }) => (
+                                <Checkbox
+                                    checked={Boolean(field.value)}
+                                    onCheckedChange={(v) => field.onChange(Boolean(v))}
+                                />
+                            )}
+                        />
+                        <label>
+                            Li e estou de acordo com os termos de uso e política de
+                            privacidade
+                        </label>
+                    </div>
+
+                    {errors.aceitarPrivacidade && (
+                        <p className="text-xs text-red-500">
+                            {errors.aceitarPrivacidade.message}
+                        </p>
+                    )}
+
+                    <div className="flex cursor-pointer items-start gap-2">
+                        <Controller
+                            control={form.control}
+                            name="aceitarCookies"
+                            render={({ field }) => (
+                                <Checkbox
+                                    checked={Boolean(field.value)}
+                                    onCheckedChange={(v) => field.onChange(Boolean(v))}
+                                />
+                            )}
+                        />
+                        <label>
+                            Li e estou de acordo com a política de cookies e código de
+                            conduta
+                        </label>
+                    </div>
+
+                    {errors.aceitarCookies && (
+                        <p className="text-xs text-red-500">
+                            {errors.aceitarCookies.message}
+                        </p>
+                    )}
+                </div>
+
+                <hr className="my-8" />
 
         <div className="space-y-2">
           <h3 className="text-sm font-semibold">

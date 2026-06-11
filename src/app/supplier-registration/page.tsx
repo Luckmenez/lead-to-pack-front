@@ -19,7 +19,11 @@ import {
 import { ProgressBar } from "@/app/supplier-registration/supplier-registration-component/progressBar";
 import { maskCNPJ, maskPhonePersonal, normalizeEmail } from "@/utils/masks";
 import { PortfolioDropzone } from "@/components/Dropzone";
-import { registerFornecedor } from "@/lib/api/auth.api";
+import {
+  registerFornecedor,
+  updateFornecedorPortfolio,
+} from "@/lib/api/auth.api";
+import { uploadFilesToS3 } from "@/lib/api/upload.api";
 import { TIPO_EMPRESA_OPCOES } from "@/lib/constants/tipoEmpresa";
 import { FORNECEDOR_CATEGORIAS } from "@/lib/catalog/categoriasCadastro";
 import { useAuth } from "@/contexts/AuthContext";
