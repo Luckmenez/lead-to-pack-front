@@ -49,11 +49,6 @@ export async function loginComprador(
   });
 }
 
-export type LoginFornecedorRequest = {
-  cpf: string;
-  senha: string;
-};
-
 export type FornecedorUser = {
   id: string;
   email: string;
@@ -90,15 +85,6 @@ export async function registerFornecedor(
   data: RegisterFornecedorRequest
 ): Promise<LoginFornecedorResponse> {
   return apiClient<LoginFornecedorResponse>("/auth/fornecedor/register", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-
-export async function loginFornecedor(
-  data: LoginFornecedorRequest
-): Promise<LoginFornecedorResponse> {
-  return apiClient<LoginFornecedorResponse>("/auth/fornecedor/login", {
     method: "POST",
     body: JSON.stringify(data),
   });

@@ -48,10 +48,9 @@ export const supplierRegistrationSchema = z.object({
 
     portfolio: z
         .array(z.instanceof(File))
-        .min(1, "Envie ao menos um arquivo")
         .max(5, "Máximo de 5 arquivos")
         .refine(
-            files => files.every(f => f.size <= 10 * 1024 * 1024),
+            files => files.length === 0 || files.every(f => f.size <= 10 * 1024 * 1024),
             "Cada arquivo deve ter no máximo 10MB"
         ),
 

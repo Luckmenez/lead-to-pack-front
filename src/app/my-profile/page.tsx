@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   BuildingsIcon,
@@ -18,21 +19,24 @@ import {
   CalendarBlankIcon,
   PencilSimpleIcon,
   CheckCircleIcon,
+  ArrowLeftIcon,
 } from "@phosphor-icons/react";
 import { useAuth } from "@/contexts/AuthContext";
 import {
+  getCompradorMe,
   getFornecedorMe,
   getProfissionalMe,
-  loadCompradorExtra,
-  saveCompradorExtra,
   type FornecedorPerfil,
   type ProfissionalPerfil,
   type CompradorPerfil,
 } from "@/lib/api/my-profile.api";
-import { getBuyers } from "@/lib/api/buyers.api";
 import { FornecedorEditForm } from "./components/FornecedorEditForm";
 import { ProfissionalEditForm } from "./components/ProfissionalEditForm";
 import { CompradorEditForm } from "./components/CompradorEditForm";
+import {
+  getDiscoveryHomeLabel,
+  getDiscoveryHomePath,
+} from "@/lib/routing";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -68,10 +72,11 @@ function TagList({
   items,
   color,
 }: {
-  items: string[];
+  items?: string[];
   color: "green" | "blue";
 }) {
-  if (!items.length)
+  const list = items ?? [];
+  if (!list.length)
     return <p className="text-sm text-gray-400">Não informado</p>;
   const cls =
     color === "green"
@@ -79,7 +84,7 @@ function TagList({
       : "rounded-full bg-[#E7EFF5] px-3 py-1 text-xs font-medium text-[#4F83A6]";
   return (
     <div className="flex flex-wrap gap-2">
-      {items.map((t) => (
+      {list.map((t) => (
         <span key={t} className={cls}>
           {t}
         </span>
@@ -250,21 +255,10 @@ function FornecedorView({ perfil, onEdit }: { perfil: FornecedorPerfil; onEdit: 
         <PortfolioSection urls={perfil.portfolioUrls} color="green" />
       </SectionCard>
 
-      {/* Interesses */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <SectionCard title="Categorias de Produtos">
-          <TagList items={perfil.categoriasProdutos} color="green" />
-        </SectionCard>
-        <SectionCard title="Materiais">
-          <TagList items={perfil.materiais} color="green" />
-        </SectionCard>
-        <SectionCard title="Serviços">
-          <TagList items={perfil.servicos} color="green" />
-        </SectionCard>
-        <SectionCard title="Setores">
-          <TagList items={perfil.setores} color="green" />
-        </SectionCard>
-      </div>
+      {/* Categorias */}
+      <SectionCard title="Categorias">
+        <TagList items={perfil.categoriasProdutos} color="green" />
+      </SectionCard>
     </div>
   );
 }
@@ -342,21 +336,10 @@ function ProfissionalView({ perfil, onEdit }: { perfil: ProfissionalPerfil; onEd
         <PortfolioSection urls={perfil.portfolioUrls} color="blue" />
       </SectionCard>
 
-      {/* Interesses */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <SectionCard title="Categorias de Produtos">
-          <TagList items={perfil.categoriasProdutos} color="blue" />
-        </SectionCard>
-        <SectionCard title="Materiais">
-          <TagList items={perfil.materiais} color="blue" />
-        </SectionCard>
-        <SectionCard title="Serviços">
-          <TagList items={perfil.servicos} color="blue" />
-        </SectionCard>
-        <SectionCard title="Setores">
-          <TagList items={perfil.setores} color="blue" />
-        </SectionCard>
-      </div>
+      {/* Categorias */}
+      <SectionCard title="Categorias">
+        <TagList items={perfil.categoriasProdutos} color="blue" />
+      </SectionCard>
     </div>
   );
 }
@@ -396,8 +379,8 @@ function CompradorView({ perfil, onEdit }: { perfil: CompradorPerfil; onEdit: ()
         <SectionCard title="Contato">
           <div className="space-y-3">
             <InfoRow icon={<EnvelopeSimpleIcon size={16} />} label="E-mail" value={perfil.email} />
-            <InfoRow icon={<PhoneIcon size={16} />} label="Telefone" value={perfil.telefone} />
-            <InfoRow icon={<WhatsappLogoIcon size={16} />} label="WhatsApp" value={perfil.whatsapp} />
+            <InfoRow icon={<PhoneIcon size={16} />} label="Telefone" value={perfil.telefonePessoal} />
+            <InfoRow icon={<WhatsappLogoIcon size={16} />} label="WhatsApp" value={perfil.whatsappPessoal} />
             <InfoRow icon={<GlobeIcon size={16} />} label="Website" value={perfil.website} />
             <InfoRow icon={<InstagramLogoIcon size={16} />} label="Rede Social" value={perfil.redeSocial} />
           </div>
@@ -418,7 +401,7 @@ function CompradorView({ perfil, onEdit }: { perfil: CompradorPerfil; onEdit: ()
 // ─── page ───────────────────────────────────────────────────────────────────
 
 export default function MeuPerfilPage() {
-  const { user, token, isLoading: authLoading } = useAuth();
+  const { user, token, isLoading: authLoading, refreshCompradorUser } = useAuth();
   const router = useRouter();
   const [perfil, setPerfil] = useState<
     FornecedorPerfil | ProfissionalPerfil | CompradorPerfil | null
@@ -437,32 +420,13 @@ export default function MeuPerfilPage() {
 
     if (user.tipo === "comprador") {
       const fetchComprador = async () => {
-        const extra = loadCompradorExtra();
-
-        // If company data is missing from localStorage, try to fetch from public endpoint
-        if (!extra.razaoSocial) {
-          try {
-            const { data } = await getBuyers({ limit: 200 });
-            const match = data.find((b) => b.id === user.id);
-            if (match) {
-              extra.razaoSocial = match.razaoSocial ?? extra.razaoSocial;
-              extra.nomeFantasia = match.nomeFantasia ?? extra.nomeFantasia;
-              extra.website = match.website || extra.website;
-              extra.redeSocial = match.redeSocial || extra.redeSocial;
-              saveCompradorExtra(extra);
-            }
-          } catch {
-            // ignore — show what we have
-          }
+        try {
+          setPerfil(await getCompradorMe(token));
+        } catch {
+          setError("Não foi possível carregar seu perfil. Tente novamente.");
+        } finally {
+          setLoading(false);
         }
-
-        setPerfil({
-          id: user.id,
-          nomeCompleto: user.nomeCompleto,
-          email: user.email,
-          ...extra,
-        } satisfies CompradorPerfil);
-        setLoading(false);
       };
       fetchComprador();
       return;
@@ -488,6 +452,13 @@ export default function MeuPerfilPage() {
     setPerfil(updated);
     setEditMode(false);
     setSavedSuccess(true);
+    if (user?.tipo === "comprador") {
+      const comprador = updated as CompradorPerfil;
+      refreshCompradorUser({
+        nomeCompleto: comprador.nomeCompleto,
+        email: comprador.email,
+      });
+    }
     setTimeout(() => setSavedSuccess(false), 4000);
   };
 
@@ -512,8 +483,23 @@ export default function MeuPerfilPage() {
   const docLabel =
     user?.tipo === "fornecedor" ? "CNPJ" : user?.tipo === "profissional" ? "CPF" : null;
 
+  const discoveryHome =
+    user?.tipo != null ? getDiscoveryHomePath(user.tipo) : "/choose-profile";
+  const discoveryHomeLabel =
+    user?.tipo != null
+      ? getDiscoveryHomeLabel(user.tipo)
+      : "Voltar";
+
   return (
     <main className="mx-auto w-full max-w-[1000px] flex-1 px-6 py-10">
+      <Link
+        href={discoveryHome}
+        className="mb-6 inline-flex items-center gap-2 rounded-full bg-[#E7EFF5] px-4 py-1.5 text-sm font-medium text-[#4F83A6] transition hover:bg-[#dbe7f0]"
+      >
+        <ArrowLeftIcon size={14} weight="bold" />
+        {discoveryHomeLabel}
+      </Link>
+
       {savedSuccess && (
         <div className="mb-4 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
           <CheckCircleIcon size={18} weight="fill" className="shrink-0" />

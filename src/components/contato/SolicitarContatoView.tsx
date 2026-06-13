@@ -7,6 +7,10 @@ import { ArrowLeftIcon } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { useAuth, type PersonaTipo } from "@/contexts/AuthContext";
 import { solicitarContato } from "@/lib/api/contato.api";
+import {
+  getDiscoveryHomeLabel,
+  getDiscoveryHomePath,
+} from "@/lib/routing";
 
 type TipoAlvo = "fornecedor" | "comprador" | "profissional";
 
@@ -34,19 +38,10 @@ export function SolicitarContatoView({
   const { token, user, isLoading } = useAuth();
 
   const resolvedBack =
-    backHrefProp ??
-    (tipoAlvo === "fornecedor"
-      ? "/find-suppliers"
-      : tipoAlvo === "comprador"
-        ? "/my-profile"
-        : user?.tipo === "comprador"
-          ? "/find-suppliers"
-          : "/my-profile");
+    backHrefProp ?? (user ? getDiscoveryHomePath(user.tipo) : "/choose-profile");
   const resolvedBackLabel =
     backLabelProp ??
-    (resolvedBack === "/find-suppliers"
-      ? "Voltar à busca de fornecedores"
-      : "Voltar à busca de compradores");
+    (user ? getDiscoveryHomeLabel(user.tipo) : "Voltar");
   const [mensagem, setMensagem] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);

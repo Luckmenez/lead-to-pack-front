@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
+import { getDiscoveryHomePath } from "@/lib/routing";
 
 export default function Home() {
   const router = useRouter();
@@ -10,13 +11,8 @@ export default function Home() {
 
   useEffect(() => {
     if (isLoading) return;
-    if (user?.tipo === "comprador") {
-      router.replace("/find-suppliers");
-    } else if (
-      user?.tipo === "fornecedor" ||
-      user?.tipo === "profissional"
-    ) {
-      router.replace("/my-profile");
+    if (user) {
+      router.replace(getDiscoveryHomePath(user.tipo));
     } else {
       router.replace("/choose-profile");
     }

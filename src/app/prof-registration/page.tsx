@@ -23,6 +23,7 @@ import { maskCPF, maskPhonePersonal, normalizeEmail } from "@/utils/masks"
 import { registerProfissional } from "@/lib/api/auth.api"
 import { TIPO_EMPRESA_OPCOES } from "@/lib/constants/tipoEmpresa"
 import { PROFISSIONAL_CATEGORIAS } from "@/lib/catalog/categoriasCadastro"
+import { useAuth } from "@/contexts/AuthContext"
 
 export default function ProfRegistrationPage() {
     const form = useForm<ProfRegistrationFormData>({
@@ -38,6 +39,7 @@ export default function ProfRegistrationPage() {
     })
 
     const router = useRouter()
+    const { loginProfissional } = useAuth()
     const [submitError, setSubmitError] = useState<string | null>(null)
 
     const {
@@ -49,7 +51,7 @@ export default function ProfRegistrationPage() {
     const onSubmit = async (data: ProfRegistrationFormData) => {
         setSubmitError(null)
         try {
-            await registerProfissional({
+            const res = await registerProfissional({
                 cpf: String(data.cpf).replace(/\D/g, ""),
                 senha: data.senha,
                 nomeCompleto: data.nomeCompleto,
@@ -64,6 +66,7 @@ export default function ProfRegistrationPage() {
                 website: data.website || "",
                 redeSocial: data.redeSocial || "",
             })
+            loginProfissional(res.accessToken, res.profissional)
             router.push(`/prof-registration/payment?payment=${data.formaPagamento}`)
         } catch (e) {
             setSubmitError(e instanceof Error ? e.message : "Erro ao realizar cadastro")
@@ -231,8 +234,8 @@ export default function ProfRegistrationPage() {
 
                 <hr className="my-8" />
 
-                <label className="text-sm font-medium">
-                    Upload de portfólio* (PDF, JPG, PNG - máx. 10MB cada)
+                <label className="text-sm font-medium text-muted-foreground">
+                    Upload de portfólio (opcional — disponível em breve)
                 </label>
 
                 <Controller

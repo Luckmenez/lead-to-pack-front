@@ -23,7 +23,7 @@ import {
 } from "@/utils/masks";
 import { registerComprador } from "@/lib/api/auth.api";
 import { useAuth } from "@/contexts/AuthContext";
-import { saveCompradorExtra } from "@/lib/api/my-profile.api";
+import { FIND_SUPPLIERS_PATH } from "@/lib/routing";
 
 export default function BuyerRegistrationPage() {
   const form = useForm<BuyerRegistrationFormData>({
@@ -66,17 +66,8 @@ export default function BuyerRegistrationPage() {
         website: data.website || "",
         redeSocial: data.redeSocial || "",
       });
-      saveCompradorExtra({
-        cnpj: cnpjDigits,
-        razaoSocial: data.razaoSocial,
-        nomeFantasia: data.nomeFantasia || null,
-        telefone: telefoneDigits,
-        whatsapp: whatsappDigits,
-        website: data.website || null,
-        redeSocial: data.redeSocial || null,
-      });
       loginComprador(res.accessToken, res.comprador);
-      router.push("/find-suppliers");
+      router.push(FIND_SUPPLIERS_PATH);
     } catch (e) {
       setSubmitError(
         e instanceof Error ? e.message : "Erro ao realizar cadastro",

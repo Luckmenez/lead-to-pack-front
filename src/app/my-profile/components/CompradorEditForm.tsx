@@ -7,7 +7,10 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/FormField";
 import { maskPhonePersonal } from "@/utils/masks";
-import { saveCompradorExtra, type CompradorPerfil } from "@/lib/api/my-profile.api";
+import {
+  updateComprador,
+  type CompradorPerfil,
+} from "@/lib/api/my-profile.api";
 
 const editSchema = z.object({
   nomeCompleto: z.string().min(3, "Informe o nome completo"),
@@ -33,7 +36,7 @@ type Props = {
   onCancel: () => void;
 };
 
-export function CompradorEditForm({ perfil, onSuccess, onCancel }: Props) {
+export function CompradorEditForm({ perfil, token, onSuccess, onCancel }: Props) {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const {
@@ -45,8 +48,8 @@ export function CompradorEditForm({ perfil, onSuccess, onCancel }: Props) {
     defaultValues: {
       nomeCompleto: perfil.nomeCompleto,
       email: perfil.email,
-      telefone: perfil.telefone,
-      whatsapp: perfil.whatsapp,
+      telefone: perfil.telefonePessoal,
+      whatsapp: perfil.whatsappPessoal,
       razaoSocial: perfil.razaoSocial,
       nomeFantasia: perfil.nomeFantasia ?? "",
       website: perfil.website ?? "",
@@ -60,24 +63,23 @@ export function CompradorEditForm({ perfil, onSuccess, onCancel }: Props) {
       const telefoneDigits = data.telefone.replace(/\D/g, "");
       const whatsappDigits = data.whatsapp.replace(/\D/g, "");
 
-      const extra = {
-        cnpj: perfil.cnpj,
-        razaoSocial: data.razaoSocial,
-        nomeFantasia: data.nomeFantasia || null,
-        telefone: telefoneDigits,
-        whatsapp: whatsappDigits,
-        website: data.website || null,
-        redeSocial: data.redeSocial || null,
-      };
+      const updated = await updateComprador(
+        {
+          nomeCompleto: data.nomeCompleto,
+          email: data.email,
+          telefonePessoal: telefoneDigits,
+          whatsappPessoal: whatsappDigits,
+          telefoneComercial: telefoneDigits,
+          whatsappComercial: whatsappDigits,
+          razaoSocial: data.razaoSocial,
+          nomeFantasia: data.nomeFantasia || null,
+          website: data.website || "",
+          redeSocial: data.redeSocial || "",
+        },
+        token,
+      );
 
-      saveCompradorExtra(extra);
-
-      onSuccess({
-        ...perfil,
-        nomeCompleto: data.nomeCompleto,
-        email: data.email,
-        ...extra,
-      });
+      onSuccess(updated);
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : "Erro ao salvar perfil");
     }

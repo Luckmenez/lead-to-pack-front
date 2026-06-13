@@ -24,6 +24,7 @@ import {
   type DiscoveryProfileModalState,
 } from "@/components/discovery/DiscoveryProfileModal";
 import { getCategoriasFiltroPorPerfil } from "@/lib/catalog/materiaisCadastro";
+import { FIND_BUYERS_PATH } from "@/lib/routing";
 
 type DiscoveryProfileType = "fornecedor" | "profissional";
 
@@ -255,6 +256,7 @@ export default function FindSuppliersPage() {
   const [hasSearched, setHasSearched] = useState(true);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [supplierData, setSupplierData] =
     useState<ListResponse<SupplierItem> | null>(null);
   const [professionalData, setProfessionalData] =
@@ -269,12 +271,12 @@ export default function FindSuppliersPage() {
       return;
     }
     if (user.tipo !== "comprador") {
-      router.replace("/my-profile");
+      router.replace(FIND_BUYERS_PATH);
     }
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    if (!user || user.tipo !== "comprador" || !hasSearched) return;
+    if (!user || !hasSearched) return;
 
     const params = {
       search: appliedSearch || undefined,
@@ -283,16 +285,9 @@ export default function FindSuppliersPage() {
       page,
     };
 
-    const emptyList = {
-      data: [],
-      total: 0,
-      page: 1,
-      limit: 9,
-      totalPages: 0,
-    };
-
     const fetchData = async () => {
       setLoading(true);
+      setSearchError(null);
       try {
         if (appliedProfileType === "fornecedor") {
           const sup = await getSuppliers(params);
@@ -303,14 +298,14 @@ export default function FindSuppliersPage() {
           setProfessionalData(prof);
           setSupplierData(null);
         }
-      } catch {
-        if (appliedProfileType === "fornecedor") {
-          setSupplierData(emptyList);
-          setProfessionalData(null);
-        } else {
-          setProfessionalData(emptyList);
-          setSupplierData(null);
-        }
+      } catch (e) {
+        setSearchError(
+          e instanceof Error
+            ? e.message
+            : "Não foi possível carregar os resultados. Tente novamente.",
+        );
+        setSupplierData(null);
+        setProfessionalData(null);
       } finally {
         setLoading(false);
       }
@@ -334,6 +329,7 @@ export default function FindSuppliersPage() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setSearchError(null);
     setAppliedSearch(searchInput);
     setAppliedMaterial(materialInput);
     setAppliedProfileType(profileTypeInput);
@@ -403,6 +399,16 @@ export default function FindSuppliersPage() {
       ) : loading ? (
         <div className="flex min-h-[200px] items-center justify-center">
           <p className="text-muted-foreground">Carregando resultados...</p>
+        </div>
+      ) : searchError ? (
+        <div
+          className="rounded-xl border border-red-200 bg-red-50 p-8 text-center"
+          role="alert"
+        >
+          <p className="text-sm font-medium text-red-700">{searchError}</p>
+          <p className="mt-2 text-sm text-red-600">
+            Verifique sua conexão ou tente buscar novamente.
+          </p>
         </div>
       ) : isEmpty ? (
         <div className="rounded-xl border bg-white p-12 text-center">
