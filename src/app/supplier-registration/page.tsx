@@ -19,8 +19,13 @@ import {
 import { ProgressBar } from "@/app/supplier-registration/supplier-registration-component/progressBar";
 import { maskCNPJ, maskPhonePersonal, normalizeEmail } from "@/utils/masks";
 import { PortfolioDropzone } from "@/components/Dropzone";
-import { registerFornecedor, updateFornecedorPortfolio } from "@/lib/api/auth.api";
+import {
+  registerFornecedor,
+  updateFornecedorPortfolio,
+} from "@/lib/api/auth.api";
 import { uploadFilesToS3 } from "@/lib/api/upload.api";
+import { TIPO_EMPRESA_OPCOES } from "@/lib/constants/tipoEmpresa";
+import { FORNECEDOR_CATEGORIAS } from "@/lib/catalog/categoriasCadastro";
 import { useAuth } from "@/contexts/AuthContext";
 
 const ESTADOS_BR = [
@@ -58,9 +63,6 @@ export default function SupplierRegistrationPage() {
     resolver: zodResolver(supplierRegistrationSchema),
     defaultValues: {
       categoriasProdutos: [],
-      materiais: [],
-      servicos: [],
-      setores: [],
       portfolio: [],
       cidade: "",
       estado: "",
@@ -93,9 +95,6 @@ export default function SupplierRegistrationPage() {
         razaoSocial: data.razaoSocial,
         nomeFantasia: data.nomeFantasia,
         categoriasProdutos: data.categoriasProdutos,
-        materiais: data.materiais,
-        servicos: data.servicos,
-        setores: data.setores,
         descricaoInstitucional: data.descricaoInstitucional,
         formaPagamento: data.formaPagamento,
         cidade: data.cidade,
@@ -107,12 +106,13 @@ export default function SupplierRegistrationPage() {
         redeSocial: data.redeSocial || "",
       });
 
-      const portfolioUrls = await uploadFilesToS3(data.portfolio, {
-        userType: "fornecedor",
-        userId: res.fornecedor.id,
-      });
-
-      await updateFornecedorPortfolio(portfolioUrls, res.accessToken);
+      if (data.portfolio.length > 0) {
+        const portfolioUrls = await uploadFilesToS3(data.portfolio, {
+          userType: "fornecedor",
+          userId: res.fornecedor.id,
+        });
+        await updateFornecedorPortfolio(portfolioUrls, res.accessToken);
+      }
 
       loginFornecedor(res.accessToken, res.fornecedor);
       router.push(
@@ -282,9 +282,11 @@ export default function SupplierRegistrationPage() {
               className={`w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4F83A6] ${errors.tipoEmpresa ? "border-red-500" : "border-input"}`}
             >
               <option value="">Selecione o tipo de empresa</option>
-              <option value="mei">MEI</option>
-              <option value="lucro_presumido">Lucro Presumido</option>
-              <option value="simples_nacional">Simples Nacional</option>
+              {TIPO_EMPRESA_OPCOES.map((opcao) => (
+                <option key={opcao.value} value={opcao.value}>
+                  {opcao.label}
+                </option>
+              ))}
             </select>
             {errors.tipoEmpresa && (
               <p className="text-xs text-red-500">
@@ -302,77 +304,11 @@ export default function SupplierRegistrationPage() {
           </h2>
 
           <InterestGroup
-            title="Categorias de Produtos"
+            title="Categorias"
             name="categoriasProdutos"
-            items={[
-              "Embalagens Primárias",
-              "Embalagens Secundárias",
-              "Embalagens Terciárias",
-              "Acessórios e Componentes",
-              "Etiquetas e Rótulos",
-              "Embalagens Sustentáveis/Recicladas",
-            ]}
+            items={[...FORNECEDOR_CATEGORIAS]}
             control={form.control}
             error={errors.categoriasProdutos?.message}
-          />
-
-          <InterestGroup
-            title="Materiais"
-            name="materiais"
-            items={[
-              "Papel / Papelão",
-              "Plásticos",
-              "Vidro",
-              "Metal e Alumínio",
-              "Madeira / Bambu",
-              "Tecido / Têxtil",
-              "Biopolímeros / Compostáveis",
-              "Multicamadas / Laminados",
-              "Rótulos e Etiquetas",
-              "Outros (Cerâmica, EPS)",
-            ]}
-            control={form.control}
-            error={errors.materiais?.message}
-          />
-
-          <InterestGroup
-            title="Serviços"
-            name="servicos"
-            items={[
-              "Design & Desenvolvimento",
-              "Prototipagem e Amostras",
-              "Impressão e Personalização",
-              "Produção Própria",
-              "Private Label",
-              "Fornecimento Sob Demanda (JIT)",
-              "Consultoria em Embalagens",
-              "Logística e Armazenagem",
-              "Reciclagem e Pós-consumo",
-            ]}
-            control={form.control}
-            error={errors.servicos?.message}
-          />
-
-          <InterestGroup
-            title="Setores"
-            name="setores"
-            items={[
-              "Alimentos & Bebidas",
-              "Farmacêutico & Hospitalar",
-              "Cosmético & Higiene",
-              "Editorial / Papelaria",
-              "Domissanitários",
-              "Pet",
-              "E-commerce & Logística",
-              "Industrial & Químico",
-              "Moda & Têxtil",
-              "Eletrônicos",
-              "Orgânicos",
-              "Bebidas Alcoólicas",
-              "Outros",
-            ]}
-            control={form.control}
-            error={errors.setores?.message}
           />
         </section>
 
@@ -400,8 +336,8 @@ export default function SupplierRegistrationPage() {
         </div>
         <hr className="my-8" />
 
-        <label className="text-sm font-medium">
-          Upload de portfólio* (PDF, JPG, PNG - máx. 10MB cada)
+        <label className="text-sm font-medium text-muted-foreground">
+          Upload de portfólio*
         </label>
 
         <Controller

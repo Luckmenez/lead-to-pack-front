@@ -9,9 +9,10 @@ import { FormField } from "@/components/ui/FormField";
 import { InterestGroup } from "@/app/buyer-registration/buyer-registration-component/InterestGroup";
 import { PortfolioEditor } from "./PortfolioEditor";
 import { maskPhonePersonal } from "@/utils/masks";
-import { uploadFilesToS3 } from "@/lib/api/upload.api";
 import { updateFornecedor, type FornecedorPerfil } from "@/lib/api/my-profile.api";
 import { updateFornecedorPortfolio } from "@/lib/api/auth.api";
+import { uploadFilesToS3 } from "@/lib/api/upload.api";
+import { FORNECEDOR_CATEGORIAS } from "@/lib/catalog/categoriasCadastro";
 
 const ESTADOS_BR = [
   { uf: "AC", nome: "Acre" }, { uf: "AL", nome: "Alagoas" },
@@ -49,10 +50,7 @@ const editSchema = z.object({
   tipoEmpresa: z.enum(["mei", "lucro_presumido", "simples_nacional"], {
     message: "Selecione o tipo de empresa",
   }),
-  categoriasProdutos: z.array(z.string()).min(1, "Selecione ao menos 1"),
-  materiais: z.array(z.string()).min(1, "Selecione ao menos 1"),
-  servicos: z.array(z.string()).min(1, "Selecione ao menos 1"),
-  setores: z.array(z.string()).min(1, "Selecione ao menos 1"),
+  categoriasProdutos: z.array(z.string()).min(1, "Selecione ao menos 1 categoria"),
   descricaoInstitucional: z.string().min(30, "Mínimo de 30 caracteres").max(500),
 });
 
@@ -66,7 +64,7 @@ type Props = {
 };
 
 export function FornecedorEditForm({ perfil, token, onSuccess, onCancel }: Props) {
-  const [keptUrls, setKeptUrls] = useState<string[]>(perfil.portfolioUrls);
+  const [keptUrls, setKeptUrls] = useState<string[]>(perfil.portfolioUrls ?? []);
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [portfolioError, setPortfolioError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -91,34 +89,16 @@ export function FornecedorEditForm({ perfil, token, onSuccess, onCancel }: Props
       tipoInscricao: perfil.tipoInscricao as "estadual" | "municipal",
       numeroInscricao: perfil.numeroInscricao,
       tipoEmpresa: perfil.tipoEmpresa as "mei" | "lucro_presumido" | "simples_nacional",
-      categoriasProdutos: perfil.categoriasProdutos,
-      materiais: perfil.materiais,
-      servicos: perfil.servicos,
-      setores: perfil.setores,
+      categoriasProdutos: perfil.categoriasProdutos ?? [],
       descricaoInstitucional: perfil.descricaoInstitucional,
     },
   });
 
   const onSubmit = async (data: EditFormData) => {
     setSubmitError(null);
-
-    if (keptUrls.length + newFiles.length === 0) {
-      setPortfolioError("O portfólio deve ter ao menos 1 arquivo");
-      return;
-    }
     setPortfolioError(null);
 
     try {
-      let uploadedUrls: string[] = [];
-      if (newFiles.length > 0) {
-        uploadedUrls = await uploadFilesToS3(newFiles, {
-          userType: "fornecedor",
-          userId: perfil.id,
-        });
-      }
-
-      const portfolioUrls = [...keptUrls, ...uploadedUrls];
-
       const updated = await updateFornecedor(
         {
           telefone: data.telefone.replace(/\D/g, ""),
@@ -134,15 +114,30 @@ export function FornecedorEditForm({ perfil, token, onSuccess, onCancel }: Props
           numeroInscricao: data.numeroInscricao,
           tipoEmpresa: data.tipoEmpresa,
           categoriasProdutos: data.categoriasProdutos,
-          materiais: data.materiais,
-          servicos: data.servicos,
-          setores: data.setores,
           descricaoInstitucional: data.descricaoInstitucional,
         },
         token
       );
 
-      await updateFornecedorPortfolio(portfolioUrls, token);
+      let portfolioUrls = updated.portfolioUrls;
+
+      const portfolioChanged =
+        newFiles.length > 0 ||
+        keptUrls.length !== (perfil.portfolioUrls?.length ?? 0) ||
+        keptUrls.some((url, i) => url !== perfil.portfolioUrls[i]);
+
+      if (portfolioChanged) {
+        let finalUrls = [...keptUrls];
+        if (newFiles.length > 0) {
+          const newUrls = await uploadFilesToS3(newFiles, {
+            userType: "fornecedor",
+            userId: perfil.id,
+          });
+          finalUrls = [...keptUrls, ...newUrls];
+        }
+        portfolioUrls = finalUrls;
+        await updateFornecedorPortfolio(portfolioUrls, token);
+      }
 
       onSuccess({ ...updated, portfolioUrls });
     } catch (e) {
@@ -276,38 +271,15 @@ export function FornecedorEditForm({ perfil, token, onSuccess, onCancel }: Props
 
       <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-[#0B2443]">
-          Interesses
+          Categorias
         </h2>
-        <div className="space-y-5">
-          <InterestGroup
-            title="Categorias de Produtos"
-            name="categoriasProdutos"
-            items={["Embalagens Primárias", "Embalagens Secundárias", "Embalagens Terciárias", "Acessórios e Componentes", "Etiquetas e Rótulos", "Embalagens Sustentáveis/Recicladas"]}
-            control={control}
-            error={errors.categoriasProdutos?.message}
-          />
-          <InterestGroup
-            title="Materiais"
-            name="materiais"
-            items={["Papel / Papelão", "Plásticos", "Vidro", "Metal e Alumínio", "Madeira / Bambu", "Tecido / Têxtil", "Biopolímeros / Compostáveis", "Multicamadas / Laminados", "Rótulos e Etiquetas", "Outros (Cerâmica, EPS)"]}
-            control={control}
-            error={errors.materiais?.message}
-          />
-          <InterestGroup
-            title="Serviços"
-            name="servicos"
-            items={["Design & Desenvolvimento", "Prototipagem e Amostras", "Impressão e Personalização", "Produção Própria", "Private Label", "Fornecimento Sob Demanda (JIT)", "Consultoria em Embalagens", "Logística e Armazenagem", "Reciclagem e Pós-consumo"]}
-            control={control}
-            error={errors.servicos?.message}
-          />
-          <InterestGroup
-            title="Setores"
-            name="setores"
-            items={["Alimentos & Bebidas", "Farmacêutico & Hospitalar", "Cosmético & Higiene", "Editorial / Papelaria", "Domissanitários", "Pet", "E-commerce & Logística", "Industrial & Químico", "Moda & Têxtil", "Eletrônicos", "Orgânicos", "Bebidas Alcoólicas", "Outros"]}
-            control={control}
-            error={errors.setores?.message}
-          />
-        </div>
+        <InterestGroup
+          title="Selecione suas categorias"
+          name="categoriasProdutos"
+          items={[...FORNECEDOR_CATEGORIAS]}
+          control={control}
+          error={errors.categoriasProdutos?.message}
+        />
       </div>
 
       <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-sm">
@@ -330,7 +302,7 @@ export function FornecedorEditForm({ perfil, token, onSuccess, onCancel }: Props
 
       <div className="rounded-xl border border-[#E2E8F0] bg-white p-6 shadow-sm">
         <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-[#0B2443]">
-          Portfólio
+          Portfólio <span className="font-normal normal-case text-gray-400">(opcional)</span>
         </h2>
         <PortfolioEditor
           keptUrls={keptUrls}

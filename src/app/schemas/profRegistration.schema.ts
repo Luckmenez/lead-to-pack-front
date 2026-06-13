@@ -29,10 +29,11 @@ export const profRegistrationSchema = z.object({
 
     redeSocial: z.string().optional(),
 
+    tipoEmpresa: z.enum(["mei", "lucro_presumido", "simples_nacional"], {
+        message: "Selecione o tipo de empresa",
+    }),
+
     categoriasProdutos: z.array(z.string()).min(1, "Selecione ao menos 1 categoria"),
-    materiais: z.array(z.string()).min(1, "Selecione ao menos 1 material"),
-    servicos: z.array(z.string()).min(1, "Selecione ao menos 1 serviço"),
-    setores: z.array(z.string()).min(1, "Selecione ao menos 1 setor"),
 
     descricaoInstitucional: z
         .string({ message: "Campo obrigatório" })

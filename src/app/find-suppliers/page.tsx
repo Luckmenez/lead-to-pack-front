@@ -23,7 +23,15 @@ import {
   DiscoveryProfileModal,
   type DiscoveryProfileModalState,
 } from "@/components/discovery/DiscoveryProfileModal";
-import { MATERIAIS_FILTRO_OPCOES } from "@/lib/catalog/materiaisCadastro";
+import { getCategoriasFiltroPorPerfil } from "@/lib/catalog/materiaisCadastro";
+import { FIND_BUYERS_PATH } from "@/lib/routing";
+
+type DiscoveryProfileType = "fornecedor" | "profissional";
+
+const PROFILE_TYPE_OPTIONS: { value: DiscoveryProfileType; label: string }[] = [
+  { value: "fornecedor", label: "Fornecedor" },
+  { value: "profissional", label: "Profissional do setor" },
+];
 
 type ListResponse<T> = {
   data: T[];
@@ -40,11 +48,10 @@ function SupplierCard({
   supplier: SupplierItem;
   onViewProfile: () => void;
 }) {
-  const categorias = Array.isArray(supplier.categoriasProdutos) ? supplier.categoriasProdutos : [];
-  const materiais = Array.isArray(supplier.materiais) ? supplier.materiais : [];
-  const servicos = Array.isArray(supplier.servicos) ? supplier.servicos : [];
-  const setores = Array.isArray(supplier.setores) ? supplier.setores : [];
-  const tags = [...new Set([...categorias, ...materiais, ...servicos, ...setores])].slice(0, 5);
+  const categorias = Array.isArray(supplier.categoriasProdutos)
+    ? supplier.categoriasProdutos
+    : [];
+  const tags = categorias.slice(0, 5);
   const descricao =
     supplier.descricaoInstitucional?.slice(0, 180) +
     (supplier.descricaoInstitucional?.length > 180 ? "..." : "");
@@ -137,11 +144,10 @@ function ProfessionalCard({
   professional: ProfessionalItem;
   onViewProfile: () => void;
 }) {
-  const categorias = Array.isArray(professional.categoriasProdutos) ? professional.categoriasProdutos : [];
-  const materiais = Array.isArray(professional.materiais) ? professional.materiais : [];
-  const servicos = Array.isArray(professional.servicos) ? professional.servicos : [];
-  const setores = Array.isArray(professional.setores) ? professional.setores : [];
-  const tags = [...new Set([...categorias, ...materiais, ...servicos, ...setores])].slice(0, 5);
+  const categorias = Array.isArray(professional.categoriasProdutos)
+    ? professional.categoriasProdutos
+    : [];
+  const tags = categorias.slice(0, 5);
   const descricao =
     professional.descricaoInstitucional?.slice(0, 180) +
     (professional.descricaoInstitucional?.length > 180 ? "..." : "");
@@ -241,12 +247,16 @@ export default function FindSuppliersPage() {
   const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
   const [materialInput, setMaterialInput] = useState("");
+  const [profileTypeInput, setProfileTypeInput] =
+    useState<DiscoveryProfileType>("fornecedor");
   const [appliedSearch, setAppliedSearch] = useState("");
   const [appliedMaterial, setAppliedMaterial] = useState("");
-  const [hasSearched, setHasSearched] = useState(false);
-  const [pageSuppliers, setPageSuppliers] = useState(1);
-  const [pageProfessionals, setPageProfessionals] = useState(1);
+  const [appliedProfileType, setAppliedProfileType] =
+    useState<DiscoveryProfileType>("fornecedor");
+  const [hasSearched, setHasSearched] = useState(true);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const [supplierData, setSupplierData] =
     useState<ListResponse<SupplierItem> | null>(null);
   const [professionalData, setProfessionalData] =
@@ -261,43 +271,41 @@ export default function FindSuppliersPage() {
       return;
     }
     if (user.tipo !== "comprador") {
-      router.replace("/my-profile");
+      router.replace(FIND_BUYERS_PATH);
     }
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    if (!user || user.tipo !== "comprador" || !hasSearched) return;
+    if (!user || !hasSearched) return;
 
     const params = {
       search: appliedSearch || undefined,
       material: appliedMaterial || undefined,
       limit: 9,
+      page,
     };
 
     const fetchData = async () => {
       setLoading(true);
+      setSearchError(null);
       try {
-        const [sup, prof] = await Promise.all([
-          getSuppliers({ ...params, page: pageSuppliers }),
-          getProfessionals({ ...params, page: pageProfessionals }),
-        ]);
-        setSupplierData(sup);
-        setProfessionalData(prof);
-      } catch {
-        setSupplierData({
-          data: [],
-          total: 0,
-          page: 1,
-          limit: 9,
-          totalPages: 0,
-        });
-        setProfessionalData({
-          data: [],
-          total: 0,
-          page: 1,
-          limit: 9,
-          totalPages: 0,
-        });
+        if (appliedProfileType === "fornecedor") {
+          const sup = await getSuppliers(params);
+          setSupplierData(sup);
+          setProfessionalData(null);
+        } else {
+          const prof = await getProfessionals(params);
+          setProfessionalData(prof);
+          setSupplierData(null);
+        }
+      } catch (e) {
+        setSearchError(
+          e instanceof Error
+            ? e.message
+            : "Não foi possível carregar os resultados. Tente novamente.",
+        );
+        setSupplierData(null);
+        setProfessionalData(null);
       } finally {
         setLoading(false);
       }
@@ -306,20 +314,27 @@ export default function FindSuppliersPage() {
     fetchData();
   }, [
     user,
-    pageSuppliers,
-    pageProfessionals,
+    page,
     appliedSearch,
     appliedMaterial,
+    appliedProfileType,
     hasSearched,
   ]);
 
+  const handleProfileTypeChange = (value: string) => {
+    const next = value as DiscoveryProfileType;
+    setProfileTypeInput(next);
+    setMaterialInput("");
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setSearchError(null);
     setAppliedSearch(searchInput);
     setAppliedMaterial(materialInput);
+    setAppliedProfileType(profileTypeInput);
     setHasSearched(true);
-    setPageSuppliers(1);
-    setPageProfessionals(1);
+    setPage(1);
   };
 
   if (authLoading || !user || user.tipo !== "comprador") {
@@ -330,19 +345,19 @@ export default function FindSuppliersPage() {
     );
   }
 
-  const materialOptions = MATERIAIS_FILTRO_OPCOES.map((m) => ({
-    value: m,
-    label: m,
-  }));
+  const categoryOptions = getCategoriasFiltroPorPerfil(profileTypeInput).filter(
+    (opt) => opt.value !== "",
+  );
 
-  const hasSuppliers = supplierData && supplierData.data.length > 0;
-  const hasProfessionals = professionalData && professionalData.data.length > 0;
-  const bothEmpty =
-    !loading &&
-    supplierData &&
-    professionalData &&
-    !hasSuppliers &&
-    !hasProfessionals;
+  const isFornecedor = appliedProfileType === "fornecedor";
+  const activeData = isFornecedor ? supplierData : professionalData;
+  const hasResults = activeData && activeData.data.length > 0;
+  const isEmpty = !loading && activeData && !hasResults;
+
+  const searchPlaceholder =
+    profileTypeInput === "fornecedor"
+      ? "Busque por nome fantasia ou razão social..."
+      : "Busque por apelido ou nome completo...";
 
   return (
     <main className="mx-auto w-full max-w-[1200px] flex-1 px-6 py-10">
@@ -353,15 +368,19 @@ export default function FindSuppliersPage() {
       <DiscoverySearchSection
         title="Encontre Fornecedores de Embalagens"
         subtitle="Conecte-se com os melhores fornecedores e profissionais do setor"
-        searchPlaceholder="Busque por nome da empresa, produto ou material..."
+        searchPlaceholder={searchPlaceholder}
         searchValue={searchInput}
         onSearchChange={setSearchInput}
         onSubmit={handleSearch}
+        showProfileTypeFilter
+        profileTypeValue={profileTypeInput}
+        onProfileTypeChange={handleProfileTypeChange}
+        profileTypeOptions={PROFILE_TYPE_OPTIONS}
         showCategoryFilter
         categoryValue={materialInput}
         onCategoryChange={setMaterialInput}
-        categoryOptions={materialOptions}
-        categoryPlaceholder="Todos os materiais"
+        categoryOptions={categoryOptions}
+        categoryPlaceholder="Todas as categorias"
       />
 
       {!hasSearched ? (
@@ -381,76 +400,80 @@ export default function FindSuppliersPage() {
         <div className="flex min-h-[200px] items-center justify-center">
           <p className="text-muted-foreground">Carregando resultados...</p>
         </div>
-      ) : bothEmpty ? (
+      ) : searchError ? (
+        <div
+          className="rounded-xl border border-red-200 bg-red-50 p-8 text-center"
+          role="alert"
+        >
+          <p className="text-sm font-medium text-red-700">{searchError}</p>
+          <p className="mt-2 text-sm text-red-600">
+            Verifique sua conexão ou tente buscar novamente.
+          </p>
+        </div>
+      ) : isEmpty ? (
         <div className="rounded-xl border bg-white p-12 text-center">
           <p className="text-muted-foreground">
             Nenhum resultado encontrado. Tente ajustar sua busca ou filtros.
           </p>
         </div>
-      ) : (
-        <>
-          {hasSuppliers && supplierData && (
-            <section className="mb-10">
-              <h2 className="mb-4 font-sans text-lg font-semibold text-[#284161]">
-                Fornecedores
-              </h2>
-              <DiscoveryResultsCount
-                total={supplierData.total}
-                entityLabel="fornecedores"
+      ) : isFornecedor && supplierData ? (
+        <section>
+          <h2 className="mb-4 font-sans text-lg font-semibold text-[#284161]">
+            Fornecedores
+          </h2>
+          <DiscoveryResultsCount
+            total={supplierData.total}
+            entityLabel="fornecedores"
+          />
+          <div className="flex flex-col gap-4">
+            {supplierData.data.map((supplier) => (
+              <SupplierCard
+                key={supplier.id}
+                supplier={supplier}
+                onViewProfile={() =>
+                  setProfileModal({ variant: "supplier", item: supplier })
+                }
               />
-              <div className="flex flex-col gap-4">
-                {supplierData.data.map((supplier) => (
-                  <SupplierCard
-                    key={supplier.id}
-                    supplier={supplier}
-                    onViewProfile={() =>
-                      setProfileModal({ variant: "supplier", item: supplier })
-                    }
-                  />
-                ))}
-              </div>
-              <PaginationBar
-                page={supplierData.page}
-                totalPages={supplierData.totalPages}
-                onPageChange={setPageSuppliers}
-                ariaLabel="Paginação fornecedores"
+            ))}
+          </div>
+          <PaginationBar
+            page={supplierData.page}
+            totalPages={supplierData.totalPages}
+            onPageChange={setPage}
+            ariaLabel="Paginação fornecedores"
+          />
+        </section>
+      ) : professionalData ? (
+        <section>
+          <h2 className="mb-4 font-sans text-lg font-semibold text-[#284161]">
+            Profissionais do setor
+          </h2>
+          <DiscoveryResultsCount
+            total={professionalData.total}
+            entityLabel="profissionais"
+          />
+          <div className="flex flex-col gap-4">
+            {professionalData.data.map((p) => (
+              <ProfessionalCard
+                key={p.id}
+                professional={p}
+                onViewProfile={() =>
+                  setProfileModal({
+                    variant: "professional",
+                    item: p,
+                  })
+                }
               />
-            </section>
-          )}
-
-          {hasProfessionals && professionalData && (
-            <section>
-              <h2 className="mb-4 font-sans text-lg font-semibold text-[#284161]">
-                Profissionais do setor
-              </h2>
-              <DiscoveryResultsCount
-                total={professionalData.total}
-                entityLabel="profissionais"
-              />
-              <div className="flex flex-col gap-4">
-                {professionalData.data.map((p) => (
-                  <ProfessionalCard
-                    key={p.id}
-                    professional={p}
-                    onViewProfile={() =>
-                      setProfileModal({
-                        variant: "professional",
-                        item: p,
-                      })
-                    }
-                  />
-                ))}
-              </div>
-              <PaginationBar
-                page={professionalData.page}
-                totalPages={professionalData.totalPages}
-                onPageChange={setPageProfessionals}
-                ariaLabel="Paginação profissionais"
-              />
-            </section>
-          )}
-        </>
-      )}
+            ))}
+          </div>
+          <PaginationBar
+            page={professionalData.page}
+            totalPages={professionalData.totalPages}
+            onPageChange={setPage}
+            ariaLabel="Paginação profissionais"
+          />
+        </section>
+      ) : null}
     </main>
   );
 }

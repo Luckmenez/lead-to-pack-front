@@ -5,9 +5,6 @@ export type SupplierItem = {
   nomeFantasia: string;
   descricaoInstitucional: string;
   categoriasProdutos: string[];
-  materiais: string[];
-  servicos: string[];
-  setores: string[];
   cidade?: string;
   estado?: string;
   portfolioUrls: string[];

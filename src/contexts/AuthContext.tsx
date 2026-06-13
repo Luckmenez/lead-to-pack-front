@@ -37,6 +37,7 @@ type AuthContextValue = AuthState & {
   loginComprador: (token: string, comprador: CompradorUser) => void;
   loginFornecedor: (token: string, fornecedor: FornecedorUser) => void;
   loginProfissional: (token: string, profissional: ProfissionalUser) => void;
+  refreshCompradorUser: (data: Pick<CompradorUser, "nomeCompleto" | "email">) => void;
   logout: () => void;
 };
 
@@ -128,15 +129,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [],
   );
 
+  const refreshCompradorUser = useCallback(
+    (data: Pick<CompradorUser, "nomeCompleto" | "email">) => {
+      setState((prev) => {
+        if (!prev.user || prev.user.tipo !== "comprador") return prev;
+        const updated: AuthUser = { ...prev.user, ...data };
+        localStorage.setItem(USER_KEY, JSON.stringify(updated));
+        return { ...prev, user: updated };
+      });
+    },
+    [],
+  );
+
   const value = useMemo<AuthContextValue>(
     () => ({
       ...state,
       loginComprador,
       loginFornecedor,
       loginProfissional,
+      refreshCompradorUser,
       logout,
     }),
-    [state, loginComprador, loginFornecedor, loginProfissional, logout],
+    [state, loginComprador, loginFornecedor, loginProfissional, refreshCompradorUser, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

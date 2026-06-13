@@ -28,6 +28,7 @@ import {
   LoginCompradorFormData,
   loginCompradorSchema,
 } from "@/app/schemas/loginComprador.schema";
+import { getDiscoveryHomePath } from "@/lib/routing";
 export function LoginForm() {
   const router = useRouter();
   const { loginComprador, loginFornecedor, loginProfissional } = useAuth();
@@ -58,16 +59,18 @@ export function LoginForm() {
         });
         return;
       }
+      let tipo: "comprador" | "fornecedor" | "profissional" | null = null;
       if (res.tipo === "comprador" && res.comprador) {
         loginComprador(res.accessToken, res.comprador);
-        router.push("/find-suppliers");
+        tipo = "comprador";
       } else if (res.tipo === "fornecedor" && res.fornecedor) {
         loginFornecedor(res.accessToken, res.fornecedor);
-        router.push("/my-profile");
+        tipo = "fornecedor";
       } else if (res.tipo === "profissional" && res.profissional) {
         loginProfissional(res.accessToken, res.profissional);
-        router.push("/my-profile");
+        tipo = "profissional";
       }
+      if (tipo) router.push(getDiscoveryHomePath(tipo));
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : "Erro ao fazer login");
     }
@@ -83,10 +86,10 @@ export function LoginForm() {
     setProfileChoice(null);
     if (res.tipo === "comprador" && res.comprador) {
       loginComprador(res.accessToken, res.comprador);
-      router.push("/find-suppliers");
+      router.push(getDiscoveryHomePath("comprador"));
     } else if (res.tipo === "fornecedor" && res.fornecedor) {
       loginFornecedor(res.accessToken, res.fornecedor);
-      router.push("/my-profile");
+      router.push(getDiscoveryHomePath("fornecedor"));
     }
   };
 

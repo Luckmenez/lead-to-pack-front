@@ -1,35 +1,39 @@
 import { apiClient } from "./client";
+import { asStringArray } from "./profile-normalize";
 
 export type CompradorPerfil = {
   id: string;
   nomeCompleto: string;
   email: string;
+  telefonePessoal: string;
+  whatsappPessoal: string;
   cnpj: string;
   razaoSocial: string;
   nomeFantasia: string | null;
-  telefone: string;
-  whatsapp: string;
+  telefoneComercial: string;
+  whatsappComercial: string;
   website: string | null;
   redeSocial: string | null;
+  createdAt: string;
 };
 
-const COMPRADOR_PROFILE_KEY = "lead2pack_comprador_profile";
-
-export function loadCompradorExtra(): Omit<CompradorPerfil, "id" | "nomeCompleto" | "email"> {
-  if (typeof window === "undefined") {
-    return { cnpj: "", razaoSocial: "", nomeFantasia: null, telefone: "", whatsapp: "", website: null, redeSocial: null };
-  }
-  const raw = localStorage.getItem(COMPRADOR_PROFILE_KEY);
-  if (!raw) return { cnpj: "", razaoSocial: "", nomeFantasia: null, telefone: "", whatsapp: "", website: null, redeSocial: null };
-  return JSON.parse(raw);
+export async function getCompradorMe(token: string): Promise<CompradorPerfil> {
+  return apiClient<CompradorPerfil>("/compradores/me", { token });
 }
 
-export function saveCompradorExtra(data: Omit<CompradorPerfil, "id" | "nomeCompleto" | "email">): void {
-  localStorage.setItem(COMPRADOR_PROFILE_KEY, JSON.stringify(data));
-}
+export type UpdateCompradorRequest = Partial<
+  Omit<CompradorPerfil, "id" | "cnpj" | "createdAt">
+>;
 
-export function clearCompradorExtra(): void {
-  localStorage.removeItem(COMPRADOR_PROFILE_KEY);
+export async function updateComprador(
+  data: UpdateCompradorRequest,
+  token: string,
+): Promise<CompradorPerfil> {
+  return apiClient<CompradorPerfil>("/compradores/me", {
+    method: "PATCH",
+    token,
+    body: JSON.stringify(data),
+  });
 }
 
 export type FornecedorPerfil = {
@@ -48,9 +52,6 @@ export type FornecedorPerfil = {
   numeroInscricao: string;
   tipoEmpresa: string;
   categoriasProdutos: string[];
-  materiais: string[];
-  servicos: string[];
-  setores: string[];
   descricaoInstitucional: string;
   portfolioUrls: string[];
   formaPagamento: string;
@@ -68,9 +69,6 @@ export type ProfissionalPerfil = {
   website: string | null;
   redeSocial: string | null;
   categoriasProdutos: string[];
-  materiais: string[];
-  servicos: string[];
-  setores: string[];
   descricaoInstitucional: string;
   portfolioUrls: string[];
   formaPagamento: string;
@@ -78,11 +76,21 @@ export type ProfissionalPerfil = {
 };
 
 export async function getFornecedorMe(token: string): Promise<FornecedorPerfil> {
-  return apiClient<FornecedorPerfil>("/fornecedores/me", { token });
+  const raw = await apiClient<FornecedorPerfil>("/fornecedores/me", { token });
+  return {
+    ...raw,
+    categoriasProdutos: asStringArray(raw.categoriasProdutos),
+    portfolioUrls: asStringArray(raw.portfolioUrls),
+  };
 }
 
 export async function getProfissionalMe(token: string): Promise<ProfissionalPerfil> {
-  return apiClient<ProfissionalPerfil>("/profissionais/me", { token });
+  const raw = await apiClient<ProfissionalPerfil>("/profissionais/me", { token });
+  return {
+    ...raw,
+    categoriasProdutos: asStringArray(raw.categoriasProdutos),
+    portfolioUrls: asStringArray(raw.portfolioUrls),
+  };
 }
 
 export type UpdateFornecedorRequest = Partial<
@@ -93,11 +101,16 @@ export async function updateFornecedor(
   data: UpdateFornecedorRequest,
   token: string
 ): Promise<FornecedorPerfil> {
-  return apiClient<FornecedorPerfil>("/fornecedores/me", {
+  const raw = await apiClient<FornecedorPerfil>("/fornecedores/me", {
     method: "PATCH",
     token,
     body: JSON.stringify(data),
   });
+  return {
+    ...raw,
+    categoriasProdutos: asStringArray(raw.categoriasProdutos),
+    portfolioUrls: asStringArray(raw.portfolioUrls),
+  };
 }
 
 export type UpdateProfissionalRequest = Partial<
@@ -108,9 +121,14 @@ export async function updateProfissional(
   data: UpdateProfissionalRequest,
   token: string
 ): Promise<ProfissionalPerfil> {
-  return apiClient<ProfissionalPerfil>("/profissionais/me", {
+  const raw = await apiClient<ProfissionalPerfil>("/profissionais/me", {
     method: "PATCH",
     token,
     body: JSON.stringify(data),
   });
+  return {
+    ...raw,
+    categoriasProdutos: asStringArray(raw.categoriasProdutos),
+    portfolioUrls: asStringArray(raw.portfolioUrls),
+  };
 }

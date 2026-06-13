@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState, useEffect } from "react";
 import { UserCircleIcon, SignOutIcon, UserIcon, CaretDownIcon } from "@phosphor-icons/react";
 import { useAuth } from "@/contexts/AuthContext";
+import { getDiscoveryHomePath } from "@/lib/routing";
 
 export function Header() {
   const router = useRouter();
@@ -41,13 +42,7 @@ export function Header() {
     <header className="w-full shrink-0 bg-white px-8 py-4 shadow-[0_3px_10px_rgba(0,0,0,0.18)]">
       <div className="flex items-center justify-between">
         <Link
-          href={
-            user?.tipo === "comprador"
-              ? "/find-suppliers"
-              : user?.tipo === "fornecedor" || user?.tipo === "profissional"
-                ? "/my-profile"
-                : "/"
-          }
+          href={isAuthenticated && user ? getDiscoveryHomePath(user.tipo) : "/"}
           className="relative h-12 w-48 cursor-pointer"
         >
           <Image

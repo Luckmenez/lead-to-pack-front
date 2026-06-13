@@ -49,11 +49,6 @@ export async function loginComprador(
   });
 }
 
-export type LoginFornecedorRequest = {
-  cpf: string;
-  senha: string;
-};
-
 export type FornecedorUser = {
   id: string;
   email: string;
@@ -74,9 +69,6 @@ export type RegisterFornecedorRequest = {
   razaoSocial: string;
   nomeFantasia: string;
   categoriasProdutos: string[];
-  materiais: string[];
-  servicos: string[];
-  setores: string[];
   descricaoInstitucional: string;
   formaPagamento: "cartao" | "boleto" | "pix";
   cidade: string;
@@ -98,15 +90,6 @@ export async function registerFornecedor(
   });
 }
 
-export async function loginFornecedor(
-  data: LoginFornecedorRequest
-): Promise<LoginFornecedorResponse> {
-  return apiClient<LoginFornecedorResponse>("/auth/fornecedor/login", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-
 export type RegisterProfissionalRequest = {
   cpf: string;
   senha: string;
@@ -115,10 +98,8 @@ export type RegisterProfissionalRequest = {
   telefonePessoal: string;
   whatsappPessoal: string;
   emailPessoal: string;
+  tipoEmpresa: "mei" | "lucro_presumido" | "simples_nacional";
   categoriasProdutos: string[];
-  materiais: string[];
-  servicos: string[];
-  setores: string[];
   descricaoInstitucional: string;
   portfolioUrls?: string[];
   formaPagamento: "cartao" | "boleto" | "pix";

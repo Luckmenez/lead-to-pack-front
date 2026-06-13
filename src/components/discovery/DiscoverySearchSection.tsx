@@ -6,7 +6,7 @@ import {
   CaretDownIcon,
 } from "@phosphor-icons/react";
 
-type CategoryOption = { value: string; label: string };
+type SelectOption = { value: string; label: string };
 
 type DiscoverySearchSectionProps = {
   title: string;
@@ -16,12 +16,59 @@ type DiscoverySearchSectionProps = {
   searchValue: string;
   onSearchChange: (value: string) => void;
   onSubmit: (e: React.FormEvent) => void;
+  showProfileTypeFilter?: boolean;
+  profileTypeValue?: string;
+  onProfileTypeChange?: (value: string) => void;
+  profileTypeOptions?: SelectOption[];
+  profileTypePlaceholder?: string;
+  profileTypeIncludeEmptyOption?: boolean;
   showCategoryFilter?: boolean;
   categoryValue?: string;
   onCategoryChange?: (value: string) => void;
-  categoryOptions?: CategoryOption[];
+  categoryOptions?: SelectOption[];
   categoryPlaceholder?: string;
 };
+
+function FilterSelect({
+  value,
+  onChange,
+  options,
+  placeholder,
+  ariaLabel,
+  includeEmptyOption = true,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  options: SelectOption[];
+  placeholder: string;
+  ariaLabel: string;
+  includeEmptyOption?: boolean;
+}) {
+  return (
+    <div className="relative min-w-0 flex-1">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label={ariaLabel}
+        className="h-[52px] w-full cursor-pointer appearance-none rounded-[10px] border border-[#E2E8F0] bg-white py-3 pl-3 pr-10 font-sans text-base text-[#1a1c1e] outline-none focus:border-[#284161] focus:ring-2 focus:ring-[#284161]/20"
+      >
+        {includeEmptyOption ? (
+          <option value="">{placeholder}</option>
+        ) : null}
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+      </select>
+      <CaretDownIcon
+        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#757575]"
+        size={18}
+        weight="bold"
+      />
+    </div>
+  );
+}
 
 export function DiscoverySearchSection({
   title,
@@ -31,11 +78,17 @@ export function DiscoverySearchSection({
   searchValue,
   onSearchChange,
   onSubmit,
+  showProfileTypeFilter = false,
+  profileTypeValue = "",
+  onProfileTypeChange,
+  profileTypeOptions = [],
+  profileTypePlaceholder = "Tipo de perfil",
+  profileTypeIncludeEmptyOption = false,
   showCategoryFilter = false,
   categoryValue = "",
   onCategoryChange,
   categoryOptions = [],
-  categoryPlaceholder = "Todos os materiais",
+  categoryPlaceholder = "Todas as categorias",
 }: DiscoverySearchSectionProps) {
   return (
     <>
@@ -68,6 +121,25 @@ export function DiscoverySearchSection({
               />
             </div>
 
+            {showProfileTypeFilter ? (
+              <>
+                <div
+                  className="hidden w-px shrink-0 self-stretch bg-[#E2E8F0] lg:block"
+                  aria-hidden
+                />
+                <div className="flex min-h-[52px] min-w-0 flex-1 items-center gap-2 sm:flex-[0.85] lg:max-w-[280px]">
+                  <FilterSelect
+                    value={profileTypeValue}
+                    onChange={(v) => onProfileTypeChange?.(v)}
+                    options={profileTypeOptions}
+                    placeholder={profileTypePlaceholder}
+                    ariaLabel="Tipo de perfil"
+                    includeEmptyOption={profileTypeIncludeEmptyOption}
+                  />
+                </div>
+              </>
+            ) : null}
+
             {showCategoryFilter ? (
               <>
                 <div
@@ -81,25 +153,13 @@ export function DiscoverySearchSection({
                     className="shrink-0 text-[#757575]"
                     aria-hidden
                   />
-                  <div className="relative min-w-0 flex-1">
-                    <select
-                      value={categoryValue}
-                      onChange={(e) => onCategoryChange?.(e.target.value)}
-                      className="h-[52px] w-full cursor-pointer appearance-none rounded-[10px] border border-[#E2E8F0] bg-white py-3 pl-3 pr-10 font-sans text-base text-[#1a1c1e] outline-none focus:border-[#284161] focus:ring-2 focus:ring-[#284161]/20"
-                    >
-                      <option value="">{categoryPlaceholder}</option>
-                      {categoryOptions.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                    <CaretDownIcon
-                      className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[#757575]"
-                      size={18}
-                      weight="bold"
-                    />
-                  </div>
+                  <FilterSelect
+                    value={categoryValue}
+                    onChange={(v) => onCategoryChange?.(v)}
+                    options={categoryOptions}
+                    placeholder={categoryPlaceholder}
+                    ariaLabel="Categoria"
+                  />
                 </div>
               </>
             ) : null}
