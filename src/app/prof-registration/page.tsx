@@ -20,7 +20,8 @@ import {
     profRegistrationSchema,
 } from "../schemas/profRegistration.schema"
 import { maskCPF, maskPhonePersonal, normalizeEmail } from "@/utils/masks"
-import { registerProfissional } from "@/lib/api/auth.api"
+import { registerProfissional, updateProfissionalPortfolio } from "@/lib/api/auth.api"
+import { uploadFilesToS3 } from "@/lib/api/upload.api"
 import { TIPO_EMPRESA_OPCOES } from "@/lib/constants/tipoEmpresa"
 import { PROFISSIONAL_CATEGORIAS } from "@/lib/catalog/categoriasCadastro"
 import { useAuth } from "@/contexts/AuthContext"
@@ -66,6 +67,15 @@ export default function ProfRegistrationPage() {
                 website: data.website || "",
                 redeSocial: data.redeSocial || "",
             })
+
+            if (data.portfolio.length > 0) {
+                const portfolioUrls = await uploadFilesToS3(data.portfolio, {
+                    userType: "profissional",
+                    userId: res.profissional.id,
+                })
+                await updateProfissionalPortfolio(portfolioUrls, res.accessToken)
+            }
+
             loginProfissional(res.accessToken, res.profissional)
             router.push(`/prof-registration/payment?payment=${data.formaPagamento}`)
         } catch (e) {
@@ -235,7 +245,7 @@ export default function ProfRegistrationPage() {
                 <hr className="my-8" />
 
                 <label className="text-sm font-medium text-muted-foreground">
-                    Upload de portfólio (opcional — disponível em breve)
+                    Upload de portfólio*
                 </label>
 
                 <Controller

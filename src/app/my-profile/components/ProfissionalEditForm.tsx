@@ -11,6 +11,7 @@ import { PortfolioEditor } from "./PortfolioEditor";
 import { maskPhonePersonal } from "@/utils/masks";
 import { updateProfissional, type ProfissionalPerfil } from "@/lib/api/my-profile.api";
 import { updateProfissionalPortfolio } from "@/lib/api/auth.api";
+import { uploadFilesToS3 } from "@/lib/api/upload.api";
 import { PROFISSIONAL_CATEGORIAS } from "@/lib/catalog/categoriasCadastro";
 
 const editSchema = z.object({
@@ -89,18 +90,21 @@ export function ProfissionalEditForm({ perfil, token, onSuccess, onCancel }: Pro
 
       let portfolioUrls = updated.portfolioUrls;
 
-      if (newFiles.length > 0) {
-        setPortfolioError(
-          "Upload de novos arquivos estará disponível em breve. Salve sem adicionar arquivos.",
-        );
-        return;
-      }
-
-      if (
+      const portfolioChanged =
+        newFiles.length > 0 ||
         keptUrls.length !== (perfil.portfolioUrls?.length ?? 0) ||
-        keptUrls.some((url, i) => url !== perfil.portfolioUrls[i])
-      ) {
-        portfolioUrls = keptUrls;
+        keptUrls.some((url, i) => url !== perfil.portfolioUrls[i]);
+
+      if (portfolioChanged) {
+        let finalUrls = [...keptUrls];
+        if (newFiles.length > 0) {
+          const newUrls = await uploadFilesToS3(newFiles, {
+            userType: "profissional",
+            userId: perfil.id,
+          });
+          finalUrls = [...keptUrls, ...newUrls];
+        }
+        portfolioUrls = finalUrls;
         await updateProfissionalPortfolio(portfolioUrls, token);
       }
 

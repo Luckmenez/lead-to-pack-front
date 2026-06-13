@@ -21,7 +21,9 @@ import { maskCNPJ, maskPhonePersonal, normalizeEmail } from "@/utils/masks";
 import { PortfolioDropzone } from "@/components/Dropzone";
 import {
   registerFornecedor,
+  updateFornecedorPortfolio,
 } from "@/lib/api/auth.api";
+import { uploadFilesToS3 } from "@/lib/api/upload.api";
 import { TIPO_EMPRESA_OPCOES } from "@/lib/constants/tipoEmpresa";
 import { FORNECEDOR_CATEGORIAS } from "@/lib/catalog/categoriasCadastro";
 import { useAuth } from "@/contexts/AuthContext";
@@ -103,6 +105,14 @@ export default function SupplierRegistrationPage() {
         website: data.website || "",
         redeSocial: data.redeSocial || "",
       });
+
+      if (data.portfolio.length > 0) {
+        const portfolioUrls = await uploadFilesToS3(data.portfolio, {
+          userType: "fornecedor",
+          userId: res.fornecedor.id,
+        });
+        await updateFornecedorPortfolio(portfolioUrls, res.accessToken);
+      }
 
       loginFornecedor(res.accessToken, res.fornecedor);
       router.push(
@@ -327,7 +337,7 @@ export default function SupplierRegistrationPage() {
         <hr className="my-8" />
 
         <label className="text-sm font-medium text-muted-foreground">
-          Upload de portfólio (opcional — disponível em breve)
+          Upload de portfólio*
         </label>
 
         <Controller

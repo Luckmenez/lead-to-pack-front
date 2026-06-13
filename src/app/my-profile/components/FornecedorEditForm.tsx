@@ -11,6 +11,7 @@ import { PortfolioEditor } from "./PortfolioEditor";
 import { maskPhonePersonal } from "@/utils/masks";
 import { updateFornecedor, type FornecedorPerfil } from "@/lib/api/my-profile.api";
 import { updateFornecedorPortfolio } from "@/lib/api/auth.api";
+import { uploadFilesToS3 } from "@/lib/api/upload.api";
 import { FORNECEDOR_CATEGORIAS } from "@/lib/catalog/categoriasCadastro";
 
 const ESTADOS_BR = [
@@ -120,18 +121,21 @@ export function FornecedorEditForm({ perfil, token, onSuccess, onCancel }: Props
 
       let portfolioUrls = updated.portfolioUrls;
 
-      if (newFiles.length > 0) {
-        setPortfolioError(
-          "Upload de novos arquivos estará disponível em breve. Salve sem adicionar arquivos.",
-        );
-        return;
-      }
-
-      if (
+      const portfolioChanged =
+        newFiles.length > 0 ||
         keptUrls.length !== (perfil.portfolioUrls?.length ?? 0) ||
-        keptUrls.some((url, i) => url !== perfil.portfolioUrls[i])
-      ) {
-        portfolioUrls = keptUrls;
+        keptUrls.some((url, i) => url !== perfil.portfolioUrls[i]);
+
+      if (portfolioChanged) {
+        let finalUrls = [...keptUrls];
+        if (newFiles.length > 0) {
+          const newUrls = await uploadFilesToS3(newFiles, {
+            userType: "fornecedor",
+            userId: perfil.id,
+          });
+          finalUrls = [...keptUrls, ...newUrls];
+        }
+        portfolioUrls = finalUrls;
         await updateFornecedorPortfolio(portfolioUrls, token);
       }
 
