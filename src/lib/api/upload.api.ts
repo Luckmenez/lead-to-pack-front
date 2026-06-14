@@ -88,5 +88,11 @@ export async function deleteS3File(url: string, token: string): Promise<void> {
 }
 
 export async function deleteS3Files(urls: string[], token: string): Promise<void> {
-  await Promise.allSettled(urls.map((url) => deleteS3File(url, token)))
+  const results = await Promise.allSettled(
+    urls.map((url) => deleteS3File(url, token)),
+  )
+  const failed = results.filter((r) => r.status === "rejected")
+  if (failed.length > 0) {
+    throw new Error("Erro ao remover arquivo do armazenamento")
+  }
 }

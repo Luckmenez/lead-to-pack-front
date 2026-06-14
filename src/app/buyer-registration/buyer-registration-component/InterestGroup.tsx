@@ -1,6 +1,7 @@
 "use client"
 
 import { Control, Controller } from "react-hook-form"
+import { formatCategoriaLabel } from "@/lib/catalog/formatCategoriaLabel"
 
 type InterestGroupProps = {
   title: string
@@ -56,7 +57,7 @@ export function InterestGroup({
                         }
                       `}
                     >
-                      {item}
+                      {formatCategoriaLabel(item)}
                     </button>
                   )
                 })}

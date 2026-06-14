@@ -4,21 +4,12 @@ import {
   type CatalogPerfil,
 } from "@/lib/api/catalog.api";
 
-const cache: Partial<Record<CatalogPerfil, string[]>> = {};
-
 export function useCategoriasCadastro(perfil: CatalogPerfil) {
-  const [items, setItems] = useState<string[]>(cache[perfil] ?? []);
-  const [loading, setLoading] = useState(!cache[perfil]);
+  const [items, setItems] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (cache[perfil]) {
-      setItems(cache[perfil]!);
-      setLoading(false);
-      setError(null);
-      return;
-    }
-
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -26,7 +17,6 @@ export function useCategoriasCadastro(perfil: CatalogPerfil) {
     getCategoriasCadastro(perfil)
       .then((res) => {
         if (cancelled) return;
-        cache[perfil] = res.categorias;
         setItems(res.categorias);
       })
       .catch((e) => {

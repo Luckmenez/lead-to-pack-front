@@ -13,9 +13,6 @@ import {
   InstagramLogoIcon,
   MapPinIcon,
   IdentificationCardIcon,
-  FilePdfIcon,
-  ImageIcon,
-  FileTextIcon,
   CalendarBlankIcon,
   PencilSimpleIcon,
   CheckCircleIcon,
@@ -23,6 +20,10 @@ import {
   ArrowLeftIcon,
 } from "@phosphor-icons/react";
 import { PortfolioDownloadLink } from "@/components/portfolio/PortfolioDownloadLink";
+import {
+  getPortfolioFileLabel,
+  PortfolioFileIcon,
+} from "@/components/portfolio/PortfolioFileDisplay";
 import { PORTFOLIO_EDIT_PARTIAL_ERROR } from "@/lib/api/portfolio.api";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -40,36 +41,7 @@ import {
   getDiscoveryHomeLabel,
   getDiscoveryHomePath,
 } from "@/lib/routing";
-
-// ─── helpers ────────────────────────────────────────────────────────────────
-
-function getFileLabel(url: string) {
-  const name = url.split("/").pop() ?? url;
-  return name.replace(/^\d+-/, "");
-}
-
-function PortfolioFileIcon({ url }: { url: string }) {
-  const ext = url.split(".").pop()?.toLowerCase();
-  if (ext === "pdf")
-    return (
-      <FilePdfIcon size={18} weight="fill" className="shrink-0 text-red-400" />
-    );
-  if (["png", "jpg", "jpeg"].includes(ext ?? ""))
-    return (
-      <ImageIcon
-        size={18}
-        weight="regular"
-        className="shrink-0 text-[#9CCB3B]"
-      />
-    );
-  return (
-    <FileTextIcon
-      size={18}
-      weight="regular"
-      className="shrink-0 text-gray-500"
-    />
-  );
-}
+import { formatCategoriaLabel } from "@/lib/catalog/formatCategoriaLabel";
 
 function TagList({
   items,
@@ -89,7 +61,7 @@ function TagList({
     <div className="flex flex-wrap gap-2">
       {list.map((t) => (
         <span key={t} className={cls}>
-          {t}
+          {formatCategoriaLabel(t)}
         </span>
       ))}
     </div>
@@ -158,7 +130,7 @@ function PortfolioSection({
             }`}
           >
             <PortfolioFileIcon url={url} />
-            <span className="truncate">{getFileLabel(url)}</span>
+            <span className="truncate">{getPortfolioFileLabel(url)}</span>
           </PortfolioDownloadLink>
         </li>
       ))}

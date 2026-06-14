@@ -241,7 +241,7 @@ export default function ProfRegistrationPage() {
                         {...register("descricaoInstitucional")}
                         rows={4}
                         maxLength={300}
-                        placeholder="Escreva em poucas palavras sobre sua empresa, especialidades e diferenciais... (mínimo 300 caracteres)"
+                        placeholder="Escreva em poucas palavras sobre sua empresa, especialidades e diferenciais... (mínimo 30 caracteres)"
                         className={`w-full rounded-md border p-3 text-sm ${
                             errors.descricaoInstitucional?.message
                                 ? "border-red-500 focus:ring-red-500"

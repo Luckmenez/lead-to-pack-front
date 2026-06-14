@@ -23,7 +23,8 @@ export type GetBuyersResponse = {
 };
 
 export async function getBuyers(
-  params: GetBuyersParams = {}
+  params: GetBuyersParams = {},
+  token: string,
 ): Promise<GetBuyersResponse> {
   const searchParams = new URLSearchParams();
   if (params.page != null) searchParams.set("page", String(params.page));
@@ -33,5 +34,5 @@ export async function getBuyers(
   const query = searchParams.toString();
   const path = `/compradores${query ? `?${query}` : ""}`;
 
-  return apiClient<GetBuyersResponse>(path);
+  return apiClient<GetBuyersResponse>(path, { token });
 }

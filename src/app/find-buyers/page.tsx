@@ -112,7 +112,7 @@ function PaginationBar({
 }
 
 export default function FindBuyersPage() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, token, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [searchInput, setSearchInput] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
@@ -134,17 +134,20 @@ export default function FindBuyersPage() {
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    if (!user || user.tipo === "comprador" || !hasSearched) return;
+    if (!user || user.tipo === "comprador" || !hasSearched || !token) return;
 
     const fetchData = async () => {
       setLoading(true);
       setSearchError(null);
       try {
-        const data = await getBuyers({
-          search: appliedSearch || undefined,
-          limit: 9,
-          page,
-        });
+        const data = await getBuyers(
+          {
+            search: appliedSearch || undefined,
+            limit: 9,
+            page,
+          },
+          token,
+        );
         setBuyerData(data);
       } catch (e) {
         setSearchError(
@@ -159,7 +162,7 @@ export default function FindBuyersPage() {
     };
 
     fetchData();
-  }, [user, page, appliedSearch, hasSearched]);
+  }, [user, token, page, appliedSearch, hasSearched]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

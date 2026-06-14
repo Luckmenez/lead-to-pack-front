@@ -11,7 +11,11 @@ import { PortfolioEditor } from "./PortfolioEditor";
 import { maskPhonePersonal } from "@/utils/masks";
 import { optionalWebsiteField, WEBSITE_PLACEHOLDER } from "@/utils/website";
 import { updateFornecedor, type FornecedorPerfil } from "@/lib/api/my-profile.api";
-import { PORTFOLIO_EDIT_PARTIAL_ERROR, syncPortfolio } from "@/lib/api/portfolio.api";
+import {
+  PORTFOLIO_EDIT_PARTIAL_ERROR,
+  PortfolioS3DeleteWarning,
+  syncPortfolio,
+} from "@/lib/api/portfolio.api";
 
 const ESTADOS_BR = [
   { uf: "AC", nome: "Acre" }, { uf: "AL", nome: "Alagoas" },
@@ -135,12 +139,18 @@ export function FornecedorEditForm({
         const portfolioUrls = await syncPortfolio({
           newFiles,
           keptUrls,
+          previousUrls: perfil.portfolioUrls ?? [],
           userType: "fornecedor",
           userId: perfil.id,
           token,
         });
         onSuccess({ ...updated, portfolioUrls });
-      } catch {
+      } catch (err) {
+        if (err instanceof PortfolioS3DeleteWarning) {
+          onProfileUpdated({ ...updated, portfolioUrls: err.portfolioUrls });
+          setPortfolioError(err.message);
+          return;
+        }
         onProfileUpdated(updated);
         setPortfolioError(PORTFOLIO_EDIT_PARTIAL_ERROR);
       }

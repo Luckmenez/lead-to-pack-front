@@ -11,7 +11,11 @@ import { PortfolioEditor } from "./PortfolioEditor";
 import { maskPhonePersonal } from "@/utils/masks";
 import { optionalWebsiteField, WEBSITE_PLACEHOLDER } from "@/utils/website";
 import { updateProfissional, type ProfissionalPerfil } from "@/lib/api/my-profile.api";
-import { PORTFOLIO_EDIT_PARTIAL_ERROR, syncPortfolio } from "@/lib/api/portfolio.api";
+import {
+  PORTFOLIO_EDIT_PARTIAL_ERROR,
+  PortfolioS3DeleteWarning,
+  syncPortfolio,
+} from "@/lib/api/portfolio.api";
 import { TIPO_EMPRESA_OPCOES } from "@/lib/constants/tipoEmpresa";
 
 const editSchema = z.object({
@@ -110,12 +114,18 @@ export function ProfissionalEditForm({
         const portfolioUrls = await syncPortfolio({
           newFiles,
           keptUrls,
+          previousUrls: perfil.portfolioUrls ?? [],
           userType: "profissional",
           userId: perfil.id,
           token,
         });
         onSuccess({ ...updated, portfolioUrls });
-      } catch {
+      } catch (err) {
+        if (err instanceof PortfolioS3DeleteWarning) {
+          onProfileUpdated({ ...updated, portfolioUrls: err.portfolioUrls });
+          setPortfolioError(err.message);
+          return;
+        }
         onProfileUpdated(updated);
         setPortfolioError(PORTFOLIO_EDIT_PARTIAL_ERROR);
       }

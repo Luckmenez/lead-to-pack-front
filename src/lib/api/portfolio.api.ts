@@ -7,11 +7,25 @@ import { deleteS3Files, uploadFilesToS3 } from "@/lib/api/upload.api"
 export const PORTFOLIO_EDIT_PARTIAL_ERROR =
   "Dados do perfil salvos, mas o portfólio não foi atualizado. Tente enviar os arquivos novamente."
 
+export const PORTFOLIO_S3_DELETE_PARTIAL_ERROR =
+  "Perfil salvo, mas não foi possível remover um ou mais arquivos do armazenamento. Tente salvar novamente."
+
+export class PortfolioS3DeleteWarning extends Error {
+  readonly portfolioUrls: string[]
+
+  constructor(portfolioUrls: string[]) {
+    super(PORTFOLIO_S3_DELETE_PARTIAL_ERROR)
+    this.name = "PortfolioS3DeleteWarning"
+    this.portfolioUrls = portfolioUrls
+  }
+}
+
 type PortfolioUserType = "fornecedor" | "profissional"
 
 type SyncPortfolioOptions = {
   newFiles: File[]
   keptUrls: string[]
+  previousUrls?: string[]
   userType: PortfolioUserType
   userId: string
   token: string
@@ -47,15 +61,37 @@ async function patchPortfolio(
   }
 }
 
+function getRemovedUrls(previousUrls: string[], keptUrls: string[]): string[] {
+  const kept = new Set(keptUrls)
+  return previousUrls.filter((url) => !kept.has(url))
+}
+
+async function deleteRemovedFromS3(
+  removedUrls: string[],
+  token: string,
+  savedUrls: string[],
+): Promise<void> {
+  if (removedUrls.length === 0) return
+  try {
+    await deleteS3Files(removedUrls, token)
+  } catch {
+    throw new PortfolioS3DeleteWarning(savedUrls)
+  }
+}
+
 export async function syncPortfolio({
   newFiles,
   keptUrls,
+  previousUrls = [],
   userType,
   userId,
   token,
 }: SyncPortfolioOptions): Promise<string[]> {
+  const removedUrls = getRemovedUrls(previousUrls, keptUrls)
+
   if (newFiles.length === 0) {
     await withRetry(() => patchPortfolio(userType, keptUrls, token))
+    await deleteRemovedFromS3(removedUrls, token, keptUrls)
     return keptUrls
   }
 
@@ -65,6 +101,7 @@ export async function syncPortfolio({
 
   try {
     await withRetry(() => patchPortfolio(userType, finalUrls, token))
+    await deleteRemovedFromS3(removedUrls, token, finalUrls)
     return finalUrls
   } catch (err) {
     await deleteS3Files(newUrls, token)

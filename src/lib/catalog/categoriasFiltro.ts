@@ -1,3 +1,5 @@
+import { formatCategoriaLabel } from "@/lib/catalog/formatCategoriaLabel";
+
 /** Ordem alfabética com "Todos" por último (filtro de busca). */
 export function categoriasParaFiltro(
   categorias: readonly string[],
@@ -8,6 +10,6 @@ export function categoriasParaFiltro(
 
   return [
     { value: "", label: "Todos" },
-    ...ordenadas.map((c) => ({ value: c, label: c })),
+    ...ordenadas.map((c) => ({ value: c, label: formatCategoriaLabel(c) })),
   ];
 }
