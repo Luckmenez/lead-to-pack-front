@@ -131,6 +131,34 @@ export type LoginSelecionarPerfilResponse =
   | (LoginCompradorResponse & { tipo: "comprador" })
   | (LoginFornecedorResponse & { tipo: "fornecedor" });
 
+export type PerfisVinculadosSemMulti = {
+  temMultiPerfil: false;
+  perfilAtual: "comprador" | "fornecedor" | "profissional";
+};
+
+export type PerfisVinculadosComMulti = {
+  temMultiPerfil: true;
+  perfilAtual: "comprador" | "fornecedor";
+  comprador: CompradorUser;
+  fornecedor: FornecedorUser;
+};
+
+export type PerfisVinculadosResponse =
+  | PerfisVinculadosSemMulti
+  | PerfisVinculadosComMulti;
+
+export type TrocarPerfilRequest = {
+  perfil: "comprador" | "fornecedor";
+};
+
+export type TrocarPerfilResponse = LoginSelecionarPerfilResponse;
+
+export function isPerfisVinculadosComMulti(
+  res: PerfisVinculadosResponse
+): res is PerfisVinculadosComMulti {
+  return res.temMultiPerfil === true;
+}
+
 export function isLoginPrecisaEscolherPerfil(
   res: LoginResponse
 ): res is LoginPrecisaEscolherPerfilResponse {
@@ -157,6 +185,26 @@ export async function loginSelecionarPerfil(
       body: JSON.stringify(data),
     }
   );
+}
+
+export async function getPerfisVinculados(
+  token: string
+): Promise<PerfisVinculadosResponse> {
+  return apiClient<PerfisVinculadosResponse>("/auth/perfis-vinculados", {
+    method: "GET",
+    token,
+  });
+}
+
+export async function trocarPerfil(
+  data: TrocarPerfilRequest,
+  token: string
+): Promise<TrocarPerfilResponse> {
+  return apiClient<TrocarPerfilResponse>("/auth/trocar-perfil", {
+    method: "POST",
+    token,
+    body: JSON.stringify(data),
+  });
 }
 
 export async function registerProfissional(

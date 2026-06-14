@@ -22,8 +22,10 @@ import {
   login,
   loginSelecionarPerfil,
 } from "@/lib/api/auth.api";
-import { ChooseProfileLoginModal } from "./choose-profile-login-modal";
-import type { ChooseProfileLoginModalState } from "./choose-profile-login-modal";
+import {
+  ChooseProfileModal,
+  type ChooseProfileModalData,
+} from "@/components/auth/ChooseProfileModal";
 import {
   LoginCompradorFormData,
   loginCompradorSchema,
@@ -35,7 +37,11 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [profileChoice, setProfileChoice] =
-    useState<ChooseProfileLoginModalState | null>(null);
+    useState<ChooseProfileModalData | null>(null);
+  const [loginCredentials, setLoginCredentials] = useState<{
+    email: string;
+    senha: string;
+  } | null>(null);
 
   const {
     register,
@@ -52,10 +58,12 @@ export function LoginForm() {
       const res = await login({ email: data.email.trim(), senha: data.senha });
       if (isLoginPrecisaEscolherPerfil(res)) {
         setProfileChoice({
-          email: data.email.trim(),
-          senha: data.senha,
           comprador: res.comprador,
           fornecedor: res.fornecedor,
+        });
+        setLoginCredentials({
+          email: data.email.trim(),
+          senha: data.senha,
         });
         return;
       }
@@ -77,13 +85,14 @@ export function LoginForm() {
   };
 
   const handleProfileChoice = async (perfil: "comprador" | "fornecedor") => {
-    if (!profileChoice) return;
+    if (!profileChoice || !loginCredentials) return;
     const res = await loginSelecionarPerfil({
-      email: profileChoice.email,
-      senha: profileChoice.senha,
+      email: loginCredentials.email,
+      senha: loginCredentials.senha,
       perfil,
     });
     setProfileChoice(null);
+    setLoginCredentials(null);
     if (res.tipo === "comprador" && res.comprador) {
       loginComprador(res.accessToken, res.comprador);
       router.push(getDiscoveryHomePath("comprador"));
@@ -95,9 +104,14 @@ export function LoginForm() {
 
   return (
     <>
-      <ChooseProfileLoginModal
-        state={profileChoice}
-        onClose={() => setProfileChoice(null)}
+      <ChooseProfileModal
+        open={profileChoice != null}
+        data={profileChoice}
+        variant="login"
+        onClose={() => {
+          setProfileChoice(null);
+          setLoginCredentials(null);
+        }}
         onChoose={handleProfileChoice}
       />
       <section className="relative mt-20 w-full overflow-hidden">
