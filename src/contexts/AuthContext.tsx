@@ -14,6 +14,7 @@ import type {
   FornecedorUser,
   ProfissionalUser,
 } from "@/lib/api/auth.api";
+import { registerSessionExpiredHandler } from "@/lib/auth/session-handler";
 
 const TOKEN_KEY = "lead2pack_token";
 const USER_KEY = "lead2pack_user";
@@ -38,6 +39,8 @@ type AuthContextValue = AuthState & {
   loginFornecedor: (token: string, fornecedor: FornecedorUser) => void;
   loginProfissional: (token: string, profissional: ProfissionalUser) => void;
   refreshCompradorUser: (data: Pick<CompradorUser, "nomeCompleto" | "email">) => void;
+  refreshFornecedorUser: (data: Pick<FornecedorUser, "nomeFantasia" | "email">) => void;
+  refreshProfissionalUser: (data: Pick<ProfissionalUser, "apelido" | "nomeCompleto" | "emailPessoal">) => void;
   logout: () => void;
 };
 
@@ -63,6 +66,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAuthenticated: false,
     });
   }, []);
+
+  useEffect(() => {
+    registerSessionExpiredHandler(() => {
+      logout();
+      if (
+        typeof window !== "undefined" &&
+        !window.location.pathname.startsWith("/choose-profile")
+      ) {
+        window.location.assign("/choose-profile");
+      }
+    });
+    return () => registerSessionExpiredHandler(null);
+  }, [logout]);
 
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_KEY);
@@ -134,7 +150,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setState((prev) => {
         if (!prev.user || prev.user.tipo !== "comprador") return prev;
         const updated: AuthUser = { ...prev.user, ...data };
-        localStorage.setItem(USER_KEY, JSON.stringify(updated));
+        const { tipo: _, ...stored } = updated;
+        localStorage.setItem(USER_KEY, JSON.stringify(stored));
+        return { ...prev, user: updated };
+      });
+    },
+    [],
+  );
+
+  const refreshFornecedorUser = useCallback(
+    (data: Pick<FornecedorUser, "nomeFantasia" | "email">) => {
+      setState((prev) => {
+        if (!prev.user || prev.user.tipo !== "fornecedor") return prev;
+        const updated: AuthUser = { ...prev.user, ...data };
+        const { tipo: _, ...stored } = updated;
+        localStorage.setItem(USER_KEY, JSON.stringify(stored));
+        return { ...prev, user: updated };
+      });
+    },
+    [],
+  );
+
+  const refreshProfissionalUser = useCallback(
+    (data: Pick<ProfissionalUser, "apelido" | "nomeCompleto" | "emailPessoal">) => {
+      setState((prev) => {
+        if (!prev.user || prev.user.tipo !== "profissional") return prev;
+        const updated: AuthUser = { ...prev.user, ...data };
+        const { tipo: _, ...stored } = updated;
+        localStorage.setItem(USER_KEY, JSON.stringify(stored));
         return { ...prev, user: updated };
       });
     },
@@ -148,9 +191,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loginFornecedor,
       loginProfissional,
       refreshCompradorUser,
+      refreshFornecedorUser,
+      refreshProfissionalUser,
       logout,
     }),
-    [state, loginComprador, loginFornecedor, loginProfissional, refreshCompradorUser, logout],
+    [
+      state,
+      loginComprador,
+      loginFornecedor,
+      loginProfissional,
+      refreshCompradorUser,
+      refreshFornecedorUser,
+      refreshProfissionalUser,
+      logout,
+    ],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

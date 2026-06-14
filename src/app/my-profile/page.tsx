@@ -19,8 +19,11 @@ import {
   CalendarBlankIcon,
   PencilSimpleIcon,
   CheckCircleIcon,
+  WarningCircleIcon,
   ArrowLeftIcon,
 } from "@phosphor-icons/react";
+import { PortfolioDownloadLink } from "@/components/portfolio/PortfolioDownloadLink";
+import { PORTFOLIO_EDIT_PARTIAL_ERROR } from "@/lib/api/portfolio.api";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   getCompradorMe,
@@ -146,11 +149,9 @@ function PortfolioSection({
     <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
       {urls.map((url) => (
         <li key={url}>
-          <a
-            href={`/api/download?url=${encodeURIComponent(url)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`flex items-center gap-2 rounded-lg border px-3 py-2.5 text-sm transition hover:bg-gray-50 ${
+          <PortfolioDownloadLink
+            url={url}
+            className={`flex w-full items-center gap-2 rounded-lg border px-3 py-2.5 text-sm transition hover:bg-gray-50 ${
               color === "green"
                 ? "border-[#9CCB3B]/40 text-gray-800"
                 : "border-[#4F83A6]/30 text-gray-800"
@@ -158,7 +159,7 @@ function PortfolioSection({
           >
             <PortfolioFileIcon url={url} />
             <span className="truncate">{getFileLabel(url)}</span>
-          </a>
+          </PortfolioDownloadLink>
         </li>
       ))}
     </ul>
@@ -264,6 +265,7 @@ function FornecedorView({ perfil, onEdit }: { perfil: FornecedorPerfil; onEdit: 
 }
 
 function ProfissionalView({ perfil, onEdit }: { perfil: ProfissionalPerfil; onEdit: () => void }) {
+  const tipoLabel = TIPOEMPRESA_LABEL[perfil.tipoEmpresa] ?? perfil.tipoEmpresa;
   const since = new Date(perfil.createdAt).toLocaleDateString("pt-BR", {
     month: "long",
     year: "numeric",
@@ -320,6 +322,7 @@ function ProfissionalView({ perfil, onEdit }: { perfil: ProfissionalPerfil; onEd
         <SectionCard title="Identificação">
           <div className="space-y-3">
             <InfoRow icon={<IdentificationCardIcon size={16} />} label="CPF" value={perfil.cpf} />
+            <InfoRow icon={<BriefcaseIcon size={16} />} label="Tipo de Empresa" value={tipoLabel} />
           </div>
         </SectionCard>
       </div>
@@ -401,7 +404,7 @@ function CompradorView({ perfil, onEdit }: { perfil: CompradorPerfil; onEdit: ()
 // ─── page ───────────────────────────────────────────────────────────────────
 
 export default function MeuPerfilPage() {
-  const { user, token, isLoading: authLoading, refreshCompradorUser } = useAuth();
+  const { user, token, isLoading: authLoading, refreshCompradorUser, refreshFornecedorUser, refreshProfissionalUser } = useAuth();
   const router = useRouter();
   const [perfil, setPerfil] = useState<
     FornecedorPerfil | ProfissionalPerfil | CompradorPerfil | null
@@ -410,6 +413,7 @@ export default function MeuPerfilPage() {
   const [error, setError] = useState<string | null>(null);
   const [editMode, setEditMode] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [portfolioPartialWarning, setPortfolioPartialWarning] = useState(false);
 
   useEffect(() => {
     if (authLoading) return;
@@ -448,18 +452,46 @@ export default function MeuPerfilPage() {
     fetch();
   }, [user, token, authLoading, router]);
 
-  const handleSaved = (updated: FornecedorPerfil | ProfissionalPerfil | CompradorPerfil) => {
-    setPerfil(updated);
-    setEditMode(false);
-    setSavedSuccess(true);
+  const refreshHeaderFromPerfil = (
+    updated: FornecedorPerfil | ProfissionalPerfil | CompradorPerfil,
+  ) => {
     if (user?.tipo === "comprador") {
       const comprador = updated as CompradorPerfil;
       refreshCompradorUser({
         nomeCompleto: comprador.nomeCompleto,
         email: comprador.email,
       });
+    } else if (user?.tipo === "fornecedor") {
+      const fornecedor = updated as FornecedorPerfil;
+      refreshFornecedorUser({
+        nomeFantasia: fornecedor.nomeFantasia,
+        email: fornecedor.email,
+      });
+    } else if (user?.tipo === "profissional") {
+      const profissional = updated as ProfissionalPerfil;
+      refreshProfissionalUser({
+        apelido: profissional.apelido,
+        nomeCompleto: profissional.nomeCompleto,
+        emailPessoal: profissional.emailPessoal,
+      });
     }
+  };
+
+  const handleSaved = (updated: FornecedorPerfil | ProfissionalPerfil | CompradorPerfil) => {
+    setPerfil(updated);
+    setEditMode(false);
+    setPortfolioPartialWarning(false);
+    setSavedSuccess(true);
+    refreshHeaderFromPerfil(updated);
     setTimeout(() => setSavedSuccess(false), 4000);
+  };
+
+  const handleProfileUpdated = (
+    updated: FornecedorPerfil | ProfissionalPerfil,
+  ) => {
+    setPerfil(updated);
+    setPortfolioPartialWarning(true);
+    refreshHeaderFromPerfil(updated);
   };
 
   if (authLoading || loading) {
@@ -517,19 +549,35 @@ export default function MeuPerfilPage() {
               </p>
             )}
           </div>
+
+          {portfolioPartialWarning && (
+            <div className="mb-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <WarningCircleIcon size={18} weight="fill" className="mt-0.5 shrink-0" />
+              <span>{PORTFOLIO_EDIT_PARTIAL_ERROR}</span>
+            </div>
+          )}
+
           {user?.tipo === "fornecedor" ? (
             <FornecedorEditForm
               perfil={perfil as FornecedorPerfil}
               token={token!}
               onSuccess={handleSaved}
-              onCancel={() => setEditMode(false)}
+              onProfileUpdated={handleProfileUpdated}
+              onCancel={() => {
+                setEditMode(false);
+                setPortfolioPartialWarning(false);
+              }}
             />
           ) : user?.tipo === "profissional" ? (
             <ProfissionalEditForm
               perfil={perfil as ProfissionalPerfil}
               token={token!}
               onSuccess={handleSaved}
-              onCancel={() => setEditMode(false)}
+              onProfileUpdated={handleProfileUpdated}
+              onCancel={() => {
+                setEditMode(false);
+                setPortfolioPartialWarning(false);
+              }}
             />
           ) : (
             <CompradorEditForm
@@ -543,17 +591,26 @@ export default function MeuPerfilPage() {
       ) : user?.tipo === "fornecedor" ? (
         <FornecedorView
           perfil={perfil as FornecedorPerfil}
-          onEdit={() => setEditMode(true)}
+          onEdit={() => {
+            setPortfolioPartialWarning(false);
+            setEditMode(true);
+          }}
         />
       ) : user?.tipo === "profissional" ? (
         <ProfissionalView
           perfil={perfil as ProfissionalPerfil}
-          onEdit={() => setEditMode(true)}
+          onEdit={() => {
+            setPortfolioPartialWarning(false);
+            setEditMode(true);
+          }}
         />
       ) : (
         <CompradorView
           perfil={perfil as CompradorPerfil}
-          onEdit={() => setEditMode(true)}
+          onEdit={() => {
+            setPortfolioPartialWarning(false);
+            setEditMode(true);
+          }}
         />
       )}
     </main>

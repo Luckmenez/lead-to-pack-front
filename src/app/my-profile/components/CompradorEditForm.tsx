@@ -7,6 +7,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/FormField";
 import { maskPhonePersonal } from "@/utils/masks";
+import { optionalWebsiteField, WEBSITE_PLACEHOLDER } from "@/utils/website";
 import {
   updateComprador,
   type CompradorPerfil,
@@ -19,11 +20,7 @@ const editSchema = z.object({
   whatsapp: z.string().min(10, "WhatsApp inválido"),
   razaoSocial: z.string().min(3, "Informe a Razão Social"),
   nomeFantasia: z.string().optional().or(z.literal("")),
-  website: z
-    .string()
-    .refine((v) => !v || /^https?:\/\//.test(v), "Informe uma URL válida (https://...)")
-    .optional()
-    .or(z.literal("")),
+  website: optionalWebsiteField,
   redeSocial: z.string().optional().or(z.literal("")),
 });
 
@@ -149,6 +146,7 @@ export function CompradorEditForm({ perfil, token, onSuccess, onCancel }: Props)
           <FormField
             label="Website"
             name="website"
+            placeholder={WEBSITE_PLACEHOLDER}
             register={register}
             error={errors.website?.message}
           />

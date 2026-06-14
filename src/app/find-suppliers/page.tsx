@@ -23,7 +23,8 @@ import {
   DiscoveryProfileModal,
   type DiscoveryProfileModalState,
 } from "@/components/discovery/DiscoveryProfileModal";
-import { getCategoriasFiltroPorPerfil } from "@/lib/catalog/materiaisCadastro";
+import { categoriasParaFiltro } from "@/lib/catalog/categoriasFiltro";
+import { useCategoriasCadastro } from "@/hooks/useCategoriasCadastro";
 import { FIND_BUYERS_PATH } from "@/lib/routing";
 
 type DiscoveryProfileType = "fornecedor" | "profissional";
@@ -263,6 +264,7 @@ export default function FindSuppliersPage() {
     useState<ListResponse<ProfessionalItem> | null>(null);
   const [profileModal, setProfileModal] =
     useState<DiscoveryProfileModalState>(null);
+  const { items: categoriasCadastro } = useCategoriasCadastro(profileTypeInput);
 
   useEffect(() => {
     if (authLoading) return;
@@ -345,7 +347,7 @@ export default function FindSuppliersPage() {
     );
   }
 
-  const categoryOptions = getCategoriasFiltroPorPerfil(profileTypeInput).filter(
+  const categoryOptions = categoriasParaFiltro(categoriasCadastro).filter(
     (opt) => opt.value !== "",
   );
 

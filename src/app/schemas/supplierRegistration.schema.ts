@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { optionalWebsiteField } from "@/utils/website"
 
 export const supplierRegistrationSchema = z.object({
     telefone: z
@@ -20,11 +21,7 @@ export const supplierRegistrationSchema = z.object({
 
     nomeFantasia: z.string().min(2, "Informe o nome fantasia"),
 
-    website: z
-        .string()
-        .refine(v => !v || /^https?:\/\//.test(v), "Informe uma URL válida")
-        .optional()
-        .or(z.literal("")),
+    website: optionalWebsiteField,
 
     redeSocial: z
         .string()

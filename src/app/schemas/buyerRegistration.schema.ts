@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { optionalWebsiteField } from "@/utils/website"
 
 export const buyerRegistrationSchema = z.object({
   nomeCompleto: z
@@ -21,11 +22,7 @@ export const buyerRegistrationSchema = z.object({
 
   nomeFantasia: z.string().min(2, "Informe o nome fantasia").optional(),
 
-  website: z
-    .string()
-    .regex(/^https?:\/\//, "Informe uma URL válida")
-    .optional()
-    .or(z.literal("")),
+  website: optionalWebsiteField,
 
   redeSocial: z
     .string()

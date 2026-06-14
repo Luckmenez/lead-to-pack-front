@@ -1,19 +1,36 @@
 "use client"
 
-import { Suspense } from "react"
+import { Suspense, useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowLeftIcon, CreditCardIcon } from "@phosphor-icons/react"
 import Link from "next/link"
 import { ProgressBar } from "@/app/supplier-registration/supplier-registration-component/progressBar"
 import { useSearchParams, useRouter } from "next/navigation"
 import { paymentConfig, PaymentMethod } from "./payment.config"
+import { PortfolioRegisterWarningModal } from "@/components/registration/PortfolioRegisterWarningModal"
+import { PORTFOLIO_PENDING_QUERY } from "@/lib/registration/portfolio-pending"
 
 function SupplierPaymentContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
+  const [portfolioWarningOpen, setPortfolioWarningOpen] = useState(false)
 
   const payment = searchParams.get("payment") as PaymentMethod | null
   const selectedPayment = payment ? paymentConfig[payment] : null
+  const portfolioPending = searchParams.get(PORTFOLIO_PENDING_QUERY) === "1"
+
+  useEffect(() => {
+    if (portfolioPending) {
+      setPortfolioWarningOpen(true)
+    }
+  }, [portfolioPending])
+
+  const closePortfolioWarning = useCallback(() => {
+    setPortfolioWarningOpen(false)
+    if (!portfolioPending || !payment) return
+    const params = new URLSearchParams({ payment })
+    router.replace(`/supplier-registration/payment?${params.toString()}`)
+  }, [portfolioPending, payment, router])
 
   return (
     <main className="w-full">
@@ -107,6 +124,11 @@ function SupplierPaymentContent() {
           </div>
         </div>
       </section>
+
+      <PortfolioRegisterWarningModal
+        open={portfolioWarningOpen}
+        onClose={closePortfolioWarning}
+      />
     </main>
   )
 }

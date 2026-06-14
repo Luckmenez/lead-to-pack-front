@@ -6,13 +6,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/FormField";
-import { InterestGroup } from "@/app/buyer-registration/buyer-registration-component/InterestGroup";
+import { CategoriasInterestGroup } from "@/components/catalog/CategoriasInterestGroup";
 import { PortfolioEditor } from "./PortfolioEditor";
 import { maskPhonePersonal } from "@/utils/masks";
+import { optionalWebsiteField, WEBSITE_PLACEHOLDER } from "@/utils/website";
 import { updateProfissional, type ProfissionalPerfil } from "@/lib/api/my-profile.api";
-import { updateProfissionalPortfolio } from "@/lib/api/auth.api";
-import { uploadFilesToS3 } from "@/lib/api/upload.api";
-import { PROFISSIONAL_CATEGORIAS } from "@/lib/catalog/categoriasCadastro";
+import { PORTFOLIO_EDIT_PARTIAL_ERROR, syncPortfolio } from "@/lib/api/portfolio.api";
+import { TIPO_EMPRESA_OPCOES } from "@/lib/constants/tipoEmpresa";
 
 const editSchema = z.object({
   nomeCompleto: z.string().min(3, "Informe seu nome completo"),
@@ -20,12 +20,11 @@ const editSchema = z.object({
   telefonePessoal: z.string().min(10, "Telefone inválido"),
   whatsappPessoal: z.string().min(10, "WhatsApp inválido"),
   emailPessoal: z.string().email("E-mail inválido"),
-  website: z
-    .string()
-    .refine((v) => !v || /^https?:\/\//.test(v), "Informe uma URL válida (https://...)")
-    .optional()
-    .or(z.literal("")),
+  website: optionalWebsiteField,
   redeSocial: z.string().optional().or(z.literal("")),
+  tipoEmpresa: z.enum(["mei", "lucro_presumido", "simples_nacional"], {
+    message: "Selecione o tipo de empresa",
+  }),
   categoriasProdutos: z.array(z.string()).min(1, "Selecione ao menos 1 categoria"),
   descricaoInstitucional: z
     .string()
@@ -39,10 +38,17 @@ type Props = {
   perfil: ProfissionalPerfil;
   token: string;
   onSuccess: (updated: ProfissionalPerfil) => void;
+  onProfileUpdated: (updated: ProfissionalPerfil) => void;
   onCancel: () => void;
 };
 
-export function ProfissionalEditForm({ perfil, token, onSuccess, onCancel }: Props) {
+export function ProfissionalEditForm({
+  perfil,
+  token,
+  onSuccess,
+  onProfileUpdated,
+  onCancel,
+}: Props) {
   const [keptUrls, setKeptUrls] = useState<string[]>(perfil.portfolioUrls ?? []);
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [portfolioError, setPortfolioError] = useState<string | null>(null);
@@ -63,6 +69,7 @@ export function ProfissionalEditForm({ perfil, token, onSuccess, onCancel }: Pro
       emailPessoal: perfil.emailPessoal,
       website: perfil.website ?? "",
       redeSocial: perfil.redeSocial ?? "",
+      tipoEmpresa: perfil.tipoEmpresa as "mei" | "lucro_presumido" | "simples_nacional",
       categoriasProdutos: perfil.categoriasProdutos ?? [],
       descricaoInstitucional: perfil.descricaoInstitucional,
     },
@@ -82,33 +89,36 @@ export function ProfissionalEditForm({ perfil, token, onSuccess, onCancel }: Pro
           emailPessoal: data.emailPessoal,
           website: data.website || "",
           redeSocial: data.redeSocial || "",
+          tipoEmpresa: data.tipoEmpresa,
           categoriasProdutos: data.categoriasProdutos,
           descricaoInstitucional: data.descricaoInstitucional,
         },
         token
       );
 
-      let portfolioUrls = updated.portfolioUrls;
-
       const portfolioChanged =
         newFiles.length > 0 ||
         keptUrls.length !== (perfil.portfolioUrls?.length ?? 0) ||
         keptUrls.some((url, i) => url !== perfil.portfolioUrls[i]);
 
-      if (portfolioChanged) {
-        let finalUrls = [...keptUrls];
-        if (newFiles.length > 0) {
-          const newUrls = await uploadFilesToS3(newFiles, {
-            userType: "profissional",
-            userId: perfil.id,
-          });
-          finalUrls = [...keptUrls, ...newUrls];
-        }
-        portfolioUrls = finalUrls;
-        await updateProfissionalPortfolio(portfolioUrls, token);
+      if (!portfolioChanged) {
+        onSuccess(updated);
+        return;
       }
 
-      onSuccess({ ...updated, portfolioUrls });
+      try {
+        const portfolioUrls = await syncPortfolio({
+          newFiles,
+          keptUrls,
+          userType: "profissional",
+          userId: perfil.id,
+          token,
+        });
+        onSuccess({ ...updated, portfolioUrls });
+      } catch {
+        onProfileUpdated(updated);
+        setPortfolioError(PORTFOLIO_EDIT_PARTIAL_ERROR);
+      }
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : "Erro ao salvar perfil");
     }
@@ -158,6 +168,7 @@ export function ProfissionalEditForm({ perfil, token, onSuccess, onCancel }: Pro
           <FormField
             label="Website"
             name="website"
+            placeholder={WEBSITE_PLACEHOLDER}
             register={register}
             error={errors.website?.message}
           />
@@ -173,6 +184,23 @@ export function ProfissionalEditForm({ perfil, token, onSuccess, onCancel }: Pro
               {perfil.cpf}
             </p>
           </div>
+          <div className="space-y-1">
+            <label className="text-sm font-medium">Tipo de Empresa*</label>
+            <select
+              {...register("tipoEmpresa")}
+              className={`w-full rounded-md border bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#4F83A6] ${errors.tipoEmpresa ? "border-red-500" : "border-input"}`}
+            >
+              <option value="">Selecione</option>
+              {TIPO_EMPRESA_OPCOES.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+            {errors.tipoEmpresa && (
+              <p className="text-xs text-red-500">{errors.tipoEmpresa.message}</p>
+            )}
+          </div>
         </div>
       </div>
 
@@ -180,10 +208,10 @@ export function ProfissionalEditForm({ perfil, token, onSuccess, onCancel }: Pro
         <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-[#0B2443]">
           Categorias
         </h2>
-        <InterestGroup
+        <CategoriasInterestGroup
+          perfil="profissional"
           title="Selecione suas categorias"
           name="categoriasProdutos"
-          items={[...PROFISSIONAL_CATEGORIAS]}
           control={control}
           error={errors.categoriasProdutos?.message}
         />

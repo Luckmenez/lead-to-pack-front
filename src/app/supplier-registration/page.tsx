@@ -4,7 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { InterestGroup } from "@/app/buyer-registration/buyer-registration-component/InterestGroup";
 import { FormField } from "@/components/ui/FormField";
 import { PasswordField } from "@/components/ui/PasswordField";
 import { ArrowLeftIcon, CubeIcon } from "@phosphor-icons/react";
@@ -18,14 +17,13 @@ import {
 } from "../schemas/supplierRegistration.schema";
 import { ProgressBar } from "@/app/supplier-registration/supplier-registration-component/progressBar";
 import { maskCNPJ, maskPhonePersonal, normalizeEmail } from "@/utils/masks";
+import { WEBSITE_PLACEHOLDER } from "@/utils/website";
 import { PortfolioDropzone } from "@/components/Dropzone";
-import {
-  registerFornecedor,
-  updateFornecedorPortfolio,
-} from "@/lib/api/auth.api";
-import { uploadFilesToS3 } from "@/lib/api/upload.api";
+import { registerFornecedor } from "@/lib/api/auth.api";
+import { saveNewPortfolio } from "@/lib/api/portfolio.api";
+import { registrationPaymentUrl } from "@/lib/registration/portfolio-pending";
 import { TIPO_EMPRESA_OPCOES } from "@/lib/constants/tipoEmpresa";
-import { FORNECEDOR_CATEGORIAS } from "@/lib/catalog/categoriasCadastro";
+import { CategoriasInterestGroup } from "@/components/catalog/CategoriasInterestGroup";
 import { useAuth } from "@/contexts/AuthContext";
 
 const ESTADOS_BR = [
@@ -106,17 +104,27 @@ export default function SupplierRegistrationPage() {
         redeSocial: data.redeSocial || "",
       });
 
+      let portfolioPending = false;
       if (data.portfolio.length > 0) {
-        const portfolioUrls = await uploadFilesToS3(data.portfolio, {
-          userType: "fornecedor",
-          userId: res.fornecedor.id,
-        });
-        await updateFornecedorPortfolio(portfolioUrls, res.accessToken);
+        try {
+          await saveNewPortfolio(
+            data.portfolio,
+            "fornecedor",
+            res.fornecedor.id,
+            res.accessToken,
+          );
+        } catch {
+          portfolioPending = true;
+        }
       }
 
       loginFornecedor(res.accessToken, res.fornecedor);
       router.push(
-        `/supplier-registration/payment?payment=${data.formaPagamento}`,
+        registrationPaymentUrl(
+          "/supplier-registration/payment",
+          data.formaPagamento,
+          portfolioPending,
+        ),
       );
     } catch (e) {
       setSubmitError(
@@ -211,9 +219,9 @@ export default function SupplierRegistrationPage() {
           <FormField
             label="Website"
             name="website"
+            placeholder={WEBSITE_PLACEHOLDER}
             register={register}
             error={errors.website?.message}
-            onChangeCustom={normalizeEmail}
           />
 
           <FormField
@@ -303,10 +311,10 @@ export default function SupplierRegistrationPage() {
             Selecione os itens de interesse:
           </h2>
 
-          <InterestGroup
+          <CategoriasInterestGroup
+            perfil="fornecedor"
             title="Categorias"
             name="categoriasProdutos"
-            items={[...FORNECEDOR_CATEGORIAS]}
             control={form.control}
             error={errors.categoriasProdutos?.message}
           />

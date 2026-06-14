@@ -40,15 +40,6 @@ export async function registerComprador(
   });
 }
 
-export async function loginComprador(
-  data: LoginCompradorRequest
-): Promise<LoginCompradorResponse> {
-  return apiClient<LoginCompradorResponse>("/auth/comprador/login", {
-    method: "POST",
-    body: JSON.stringify(data),
-  });
-}
-
 export type FornecedorUser = {
   id: string;
   email: string;

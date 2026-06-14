@@ -1,5 +1,6 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
+import { getAuthenticatedUser } from "@/lib/auth/verify-jwt"
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION!,
@@ -11,11 +12,29 @@ const s3 = new S3Client({
   responseChecksumValidation: "WHEN_REQUIRED",
 })
 
+const ALLOWED_USER_TYPES = new Set(["fornecedor", "profissional"])
+
 export async function POST(req: Request) {
+  const user = getAuthenticatedUser(req)
+  if (!user) {
+    return Response.json({ error: "Não autorizado" }, { status: 401 })
+  }
+
   const { filename, contentType, userType, userId } = await req.json()
 
   if (!filename || !contentType || !userType || !userId) {
-    return Response.json({ error: "filename, contentType, userType e userId são obrigatórios" }, { status: 400 })
+    return Response.json(
+      { error: "filename, contentType, userType e userId são obrigatórios" },
+      { status: 400 },
+    )
+  }
+
+  if (!ALLOWED_USER_TYPES.has(userType)) {
+    return Response.json({ error: "Tipo de usuário inválido" }, { status: 400 })
+  }
+
+  if (user.tipo !== userType || user.sub !== userId) {
+    return Response.json({ error: "Acesso negado" }, { status: 403 })
   }
 
   const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, "_")

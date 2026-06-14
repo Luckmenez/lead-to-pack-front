@@ -12,7 +12,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { FormField } from "@/components/ui/FormField";
 import { PasswordField } from "@/components/ui/PasswordField";
 import { PortfolioDropzone } from "@/components/Dropzone";
-import { InterestGroup } from "@/app/buyer-registration/buyer-registration-component/InterestGroup";
 import { ProgressBar } from "@/app/supplier-registration/supplier-registration-component/progressBar";
 
 import {
@@ -20,10 +19,12 @@ import {
     profRegistrationSchema,
 } from "../schemas/profRegistration.schema"
 import { maskCPF, maskPhonePersonal, normalizeEmail } from "@/utils/masks"
-import { registerProfissional, updateProfissionalPortfolio } from "@/lib/api/auth.api"
-import { uploadFilesToS3 } from "@/lib/api/upload.api"
+import { WEBSITE_PLACEHOLDER } from "@/utils/website"
+import { registerProfissional } from "@/lib/api/auth.api"
+import { saveNewPortfolio } from "@/lib/api/portfolio.api"
+import { registrationPaymentUrl } from "@/lib/registration/portfolio-pending"
 import { TIPO_EMPRESA_OPCOES } from "@/lib/constants/tipoEmpresa"
-import { PROFISSIONAL_CATEGORIAS } from "@/lib/catalog/categoriasCadastro"
+import { CategoriasInterestGroup } from "@/components/catalog/CategoriasInterestGroup"
 import { useAuth } from "@/contexts/AuthContext"
 
 export default function ProfRegistrationPage() {
@@ -68,16 +69,28 @@ export default function ProfRegistrationPage() {
                 redeSocial: data.redeSocial || "",
             })
 
+            let portfolioPending = false
             if (data.portfolio.length > 0) {
-                const portfolioUrls = await uploadFilesToS3(data.portfolio, {
-                    userType: "profissional",
-                    userId: res.profissional.id,
-                })
-                await updateProfissionalPortfolio(portfolioUrls, res.accessToken)
+                try {
+                    await saveNewPortfolio(
+                        data.portfolio,
+                        "profissional",
+                        res.profissional.id,
+                        res.accessToken,
+                    )
+                } catch {
+                    portfolioPending = true
+                }
             }
 
             loginProfissional(res.accessToken, res.profissional)
-            router.push(`/prof-registration/payment?payment=${data.formaPagamento}`)
+            router.push(
+                registrationPaymentUrl(
+                    "/prof-registration/payment",
+                    data.formaPagamento,
+                    portfolioPending,
+                ),
+            )
         } catch (e) {
             setSubmitError(e instanceof Error ? e.message : "Erro ao realizar cadastro")
         }
@@ -172,9 +185,9 @@ export default function ProfRegistrationPage() {
                     <FormField
                         label="Website"
                         name="website"
+                        placeholder={WEBSITE_PLACEHOLDER}
                         register={register}
                         error={errors.website?.message}
-                        onChangeCustom={normalizeEmail}
                     />
 
                     <FormField
@@ -210,10 +223,10 @@ export default function ProfRegistrationPage() {
                 <section className="space-y-6">
                     <h2 className="text-sm font-semibold">Selecione os itens de interesse:</h2>
 
-                    <InterestGroup
+                    <CategoriasInterestGroup
+                        perfil="profissional"
                         title="Categorias"
                         name="categoriasProdutos"
-                        items={[...PROFISSIONAL_CATEGORIAS]}
                         control={form.control}
                         error={errors.categoriasProdutos?.message}
                     />

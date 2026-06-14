@@ -6,13 +6,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/ui/FormField";
-import { InterestGroup } from "@/app/buyer-registration/buyer-registration-component/InterestGroup";
+import { CategoriasInterestGroup } from "@/components/catalog/CategoriasInterestGroup";
 import { PortfolioEditor } from "./PortfolioEditor";
 import { maskPhonePersonal } from "@/utils/masks";
+import { optionalWebsiteField, WEBSITE_PLACEHOLDER } from "@/utils/website";
 import { updateFornecedor, type FornecedorPerfil } from "@/lib/api/my-profile.api";
-import { updateFornecedorPortfolio } from "@/lib/api/auth.api";
-import { uploadFilesToS3 } from "@/lib/api/upload.api";
-import { FORNECEDOR_CATEGORIAS } from "@/lib/catalog/categoriasCadastro";
+import { PORTFOLIO_EDIT_PARTIAL_ERROR, syncPortfolio } from "@/lib/api/portfolio.api";
 
 const ESTADOS_BR = [
   { uf: "AC", nome: "Acre" }, { uf: "AL", nome: "Alagoas" },
@@ -37,11 +36,7 @@ const editSchema = z.object({
   email: z.string().email("E-mail inválido"),
   razaoSocial: z.string().min(3, "Informe a Razão Social"),
   nomeFantasia: z.string().min(2, "Informe o nome fantasia"),
-  website: z
-    .string()
-    .refine((v) => !v || /^https?:\/\//.test(v), "Informe uma URL válida (https://...)")
-    .optional()
-    .or(z.literal("")),
+  website: optionalWebsiteField,
   redeSocial: z.string().optional().or(z.literal("")),
   cidade: z.string().min(2, "Informe a cidade"),
   estado: z.string().min(2, "Selecione o estado"),
@@ -60,10 +55,17 @@ type Props = {
   perfil: FornecedorPerfil;
   token: string;
   onSuccess: (updated: FornecedorPerfil) => void;
+  onProfileUpdated: (updated: FornecedorPerfil) => void;
   onCancel: () => void;
 };
 
-export function FornecedorEditForm({ perfil, token, onSuccess, onCancel }: Props) {
+export function FornecedorEditForm({
+  perfil,
+  token,
+  onSuccess,
+  onProfileUpdated,
+  onCancel,
+}: Props) {
   const [keptUrls, setKeptUrls] = useState<string[]>(perfil.portfolioUrls ?? []);
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [portfolioError, setPortfolioError] = useState<string | null>(null);
@@ -119,27 +121,29 @@ export function FornecedorEditForm({ perfil, token, onSuccess, onCancel }: Props
         token
       );
 
-      let portfolioUrls = updated.portfolioUrls;
-
       const portfolioChanged =
         newFiles.length > 0 ||
         keptUrls.length !== (perfil.portfolioUrls?.length ?? 0) ||
         keptUrls.some((url, i) => url !== perfil.portfolioUrls[i]);
 
-      if (portfolioChanged) {
-        let finalUrls = [...keptUrls];
-        if (newFiles.length > 0) {
-          const newUrls = await uploadFilesToS3(newFiles, {
-            userType: "fornecedor",
-            userId: perfil.id,
-          });
-          finalUrls = [...keptUrls, ...newUrls];
-        }
-        portfolioUrls = finalUrls;
-        await updateFornecedorPortfolio(portfolioUrls, token);
+      if (!portfolioChanged) {
+        onSuccess(updated);
+        return;
       }
 
-      onSuccess({ ...updated, portfolioUrls });
+      try {
+        const portfolioUrls = await syncPortfolio({
+          newFiles,
+          keptUrls,
+          userType: "fornecedor",
+          userId: perfil.id,
+          token,
+        });
+        onSuccess({ ...updated, portfolioUrls });
+      } catch {
+        onProfileUpdated(updated);
+        setPortfolioError(PORTFOLIO_EDIT_PARTIAL_ERROR);
+      }
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : "Erro ao salvar perfil");
     }
@@ -177,6 +181,7 @@ export function FornecedorEditForm({ perfil, token, onSuccess, onCancel }: Props
           <FormField
             label="Website"
             name="website"
+            placeholder={WEBSITE_PLACEHOLDER}
             register={register}
             error={errors.website?.message}
           />
@@ -273,10 +278,10 @@ export function FornecedorEditForm({ perfil, token, onSuccess, onCancel }: Props
         <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-[#0B2443]">
           Categorias
         </h2>
-        <InterestGroup
+        <CategoriasInterestGroup
+          perfil="fornecedor"
           title="Selecione suas categorias"
           name="categoriasProdutos"
-          items={[...FORNECEDOR_CATEGORIAS]}
           control={control}
           error={errors.categoriasProdutos?.message}
         />

@@ -1,3 +1,6 @@
+import { SessionExpiredError } from "./errors";
+import { triggerSessionExpired } from "@/lib/auth/session-handler";
+
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
 
 type RequestConfig = RequestInit & {
@@ -30,6 +33,11 @@ export async function apiClient<T>(
   });
 
   if (!res.ok) {
+    if (res.status === 401 && token) {
+      triggerSessionExpired();
+      throw new SessionExpiredError();
+    }
+
     const error = await res.json().catch(() => ({ message: res.statusText }));
     const msg = Array.isArray(error.message)
       ? error.message.join(", ")

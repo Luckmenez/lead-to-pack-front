@@ -7,6 +7,7 @@ import {
   ImageIcon,
   XIcon,
 } from "@phosphor-icons/react";
+import { PortfolioDownloadLink } from "@/components/portfolio/PortfolioDownloadLink";
 import type { SupplierItem } from "@/lib/api/suppliers.api";
 import type { ProfessionalItem } from "@/lib/api/professionals.api";
 
@@ -152,15 +153,13 @@ export function DiscoveryProfileModal({ state, onClose }: Props) {
               <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {portfolioUrls.map((url) => (
                   <li key={url}>
-                    <a
-                      href={`/api/download?url=${encodeURIComponent(url)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 transition hover:border-gray-300 hover:bg-gray-50"
+                    <PortfolioDownloadLink
+                      url={url}
+                      className="flex w-full items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 transition hover:border-gray-300 hover:bg-gray-50"
                     >
                       <FileIcon url={url} />
                       <span className="truncate">{getFileLabel(url)}</span>
-                    </a>
+                    </PortfolioDownloadLink>
                   </li>
                 ))}
               </ul>
