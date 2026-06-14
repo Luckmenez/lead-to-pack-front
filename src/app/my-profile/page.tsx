@@ -55,8 +55,8 @@ function TagList({
     return <p className="text-sm text-gray-400">Não informado</p>;
   const cls =
     color === "green"
-      ? "rounded-full bg-[#EEF6DB] px-3 py-1 text-xs font-medium text-[#5a7a1f]"
-      : "rounded-full bg-[#E7EFF5] px-3 py-1 text-xs font-medium text-[#4F83A6]";
+      ? "rounded-full bg-[#EEF6DB] px-3 py-1 text-xs font-medium capitalize text-[#5a7a1f]"
+      : "rounded-full bg-[#E7EFF5] px-3 py-1 text-xs font-medium capitalize text-[#4F83A6]";
   return (
     <div className="flex flex-wrap gap-2">
       {list.map((t) => (

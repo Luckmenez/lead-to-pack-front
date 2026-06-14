@@ -90,7 +90,7 @@ function SupplierCard({
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded bg-[#EEF6DB] px-2.5 py-1 text-xs text-[#5a7a1f]"
+                className="rounded bg-[#EEF6DB] px-2.5 py-1 text-xs capitalize text-[#5a7a1f]"
               >
                 {formatCategoriaLabel(tag)}
               </span>
@@ -159,7 +159,7 @@ function ProfessionalCard({
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded bg-[#E7EFF5] px-2.5 py-1 text-xs text-[#4F83A6]"
+                className="rounded bg-[#E7EFF5] px-2.5 py-1 text-xs capitalize text-[#4F83A6]"
               >
                 {formatCategoriaLabel(tag)}
               </span>

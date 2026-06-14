@@ -66,8 +66,8 @@ export function DiscoveryProfileModal({ state, onClose }: Props) {
   const portfolioUrls = normalizeStringArray(state.item.portfolioUrls);
   const tagPillClass =
     state.variant === "supplier"
-      ? "rounded bg-[#EEF6DB] px-3 py-1.5 text-sm text-[#5a7a1f]"
-      : "rounded bg-[#E7EFF5] px-3 py-1.5 text-sm text-[#4F83A6]";
+      ? "rounded bg-[#EEF6DB] px-3 py-1.5 text-sm capitalize text-[#5a7a1f]"
+      : "rounded bg-[#E7EFF5] px-3 py-1.5 text-sm capitalize text-[#4F83A6]";
 
   return (
     <div
