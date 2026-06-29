@@ -1,6 +1,7 @@
 "use client"
 
 import { Control, Controller } from "react-hook-form"
+import { formatCategoriaLabel } from "@/lib/catalog/formatCategoriaLabel"
 
 type InterestGroupProps = {
   title: string
@@ -48,7 +49,7 @@ export function InterestGroup({
                       key={item}
                       type="button"
                       onClick={() => toggleItem(item)}
-                      className={`cursor-pointer rounded-full border px-3 py-1 text-xs transition
+                      className={`cursor-pointer rounded-full border px-3 py-1 text-xs capitalize transition
                         ${
                           isSelected
                             ? "border-[#5B86A8] bg-[#E7EFF5] text-[#4F83A6]"
@@ -56,7 +57,7 @@ export function InterestGroup({
                         }
                       `}
                     >
-                      {item}
+                      {formatCategoriaLabel(item)}
                     </button>
                   )
                 })}

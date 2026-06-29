@@ -1,4 +1,5 @@
 import { z } from "zod"
+import { optionalWebsiteField } from "@/utils/website"
 
 export const profRegistrationSchema = z.object({
     cpf: z
@@ -22,10 +23,7 @@ export const profRegistrationSchema = z.object({
 
     emailPessoal: z.string().email({ message: "Informe um E-mail válido" }),
 
-    website: z
-        .string()
-        .optional()
-        .refine(v => !v || /^https?:\/\//.test(v), "Informe uma URL válida"),
+    website: optionalWebsiteField,
 
     redeSocial: z.string().optional(),
 

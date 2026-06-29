@@ -21,6 +21,7 @@ import {
   maskPhonePersonal,
   normalizeEmail,
 } from "@/utils/masks";
+import { WEBSITE_PLACEHOLDER } from "@/utils/website";
 import { registerComprador } from "@/lib/api/auth.api";
 import { useAuth } from "@/contexts/AuthContext";
 import { FIND_SUPPLIERS_PATH } from "@/lib/routing";
@@ -143,6 +144,7 @@ export default function BuyerRegistrationPage() {
           <FormField
             label="Website"
             name="website"
+            placeholder={WEBSITE_PLACEHOLDER}
             register={register}
             error={errors.website?.message}
           />

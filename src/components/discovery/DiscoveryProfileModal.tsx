@@ -1,42 +1,15 @@
 "use client";
 
 import { useEffect } from "react";
+import { XIcon } from "@phosphor-icons/react";
+import { PortfolioDownloadLink } from "@/components/portfolio/PortfolioDownloadLink";
 import {
-  FileTextIcon,
-  FilePdfIcon,
-  ImageIcon,
-  XIcon,
-} from "@phosphor-icons/react";
+  getPortfolioFileLabel,
+  PortfolioFileIcon,
+} from "@/components/portfolio/PortfolioFileDisplay";
+import { formatCategoriaLabel } from "@/lib/catalog/formatCategoriaLabel";
 import type { SupplierItem } from "@/lib/api/suppliers.api";
 import type { ProfessionalItem } from "@/lib/api/professionals.api";
-
-function getFileLabel(url: string): string {
-  const filename = url.split("/").pop() ?? url;
-  return filename.replace(/^\d+-/, "");
-}
-
-function FileIcon({ url }: { url: string }) {
-  const ext = url.split(".").pop()?.toLowerCase();
-  if (ext === "pdf")
-    return (
-      <FilePdfIcon size={20} weight="fill" className="shrink-0 text-red-400" />
-    );
-  if (ext === "png" || ext === "jpg" || ext === "jpeg")
-    return (
-      <ImageIcon
-        size={20}
-        weight="regular"
-        className="shrink-0 text-[#9CCB3B]"
-      />
-    );
-  return (
-    <FileTextIcon
-      size={20}
-      weight="regular"
-      className="shrink-0 text-gray-500"
-    />
-  );
-}
 
 function normalizeStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
@@ -93,8 +66,8 @@ export function DiscoveryProfileModal({ state, onClose }: Props) {
   const portfolioUrls = normalizeStringArray(state.item.portfolioUrls);
   const tagPillClass =
     state.variant === "supplier"
-      ? "rounded bg-[#EEF6DB] px-3 py-1.5 text-sm text-[#5a7a1f]"
-      : "rounded bg-[#E7EFF5] px-3 py-1.5 text-sm text-[#4F83A6]";
+      ? "rounded bg-[#EEF6DB] px-3 py-1.5 text-sm capitalize text-[#5a7a1f]"
+      : "rounded bg-[#E7EFF5] px-3 py-1.5 text-sm capitalize text-[#4F83A6]";
 
   return (
     <div
@@ -152,15 +125,13 @@ export function DiscoveryProfileModal({ state, onClose }: Props) {
               <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {portfolioUrls.map((url) => (
                   <li key={url}>
-                    <a
-                      href={`/api/download?url=${encodeURIComponent(url)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 transition hover:border-gray-300 hover:bg-gray-50"
+                    <PortfolioDownloadLink
+                      url={url}
+                      className="flex w-full items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-800 transition hover:border-gray-300 hover:bg-gray-50"
                     >
-                      <FileIcon url={url} />
-                      <span className="truncate">{getFileLabel(url)}</span>
-                    </a>
+                      <PortfolioFileIcon url={url} size={20} />
+                      <span className="truncate">{getPortfolioFileLabel(url)}</span>
+                    </PortfolioDownloadLink>
                   </li>
                 ))}
               </ul>
@@ -175,7 +146,7 @@ export function DiscoveryProfileModal({ state, onClose }: Props) {
               <div className="flex flex-wrap gap-2">
                 {tagsCadastro.map((tag) => (
                   <span key={tag} className={tagPillClass}>
-                    {tag}
+                    {formatCategoriaLabel(tag)}
                   </span>
                 ))}
               </div>

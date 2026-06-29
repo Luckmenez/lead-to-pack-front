@@ -1,28 +1,13 @@
 "use client";
 
-import {
-  FilePdfIcon,
-  FileTextIcon,
-  ImageIcon,
-  XIcon,
-} from "@phosphor-icons/react";
+import { XIcon } from "@phosphor-icons/react";
 import { PortfolioDropzone } from "@/components/Dropzone";
+import {
+  getPortfolioFileLabel,
+  PortfolioFileIcon,
+} from "@/components/portfolio/PortfolioFileDisplay";
 
 const MAX_PORTFOLIO = 5;
-
-function getFileLabel(url: string) {
-  const name = url.split("/").pop() ?? url;
-  return name.replace(/^\d+-/, "");
-}
-
-function ExistingFileIcon({ url }: { url: string }) {
-  const ext = url.split(".").pop()?.toLowerCase();
-  if (ext === "pdf")
-    return <FilePdfIcon size={18} weight="fill" className="shrink-0 text-red-400" />;
-  if (["png", "jpg", "jpeg"].includes(ext ?? ""))
-    return <ImageIcon size={18} weight="regular" className="shrink-0 text-[#9CCB3B]" />;
-  return <FileTextIcon size={18} weight="regular" className="shrink-0 text-gray-500" />;
-}
 
 type Props = {
   keptUrls: string[];
@@ -57,9 +42,9 @@ export function PortfolioEditor({
                   : "border-[#4F83A6]/30"
               }`}
             >
-              <ExistingFileIcon url={url} />
+              <PortfolioFileIcon url={url} />
               <span className="min-w-0 flex-1 truncate text-sm text-gray-800">
-                {getFileLabel(url)}
+                {getPortfolioFileLabel(url)}
               </span>
               <button
                 type="button"

@@ -4,29 +4,48 @@ import { useEffect, useState } from "react";
 import { CubeIcon, ShoppingCartIcon, XIcon } from "@phosphor-icons/react";
 import type { CompradorUser, FornecedorUser } from "@/lib/api/auth.api";
 
-export type ChooseProfileLoginModalState = {
-  email: string;
-  senha: string;
+export type ChooseProfileModalData = {
   comprador: CompradorUser;
   fornecedor: FornecedorUser;
 };
 
 type Props = {
-  state: ChooseProfileLoginModalState | null;
+  open: boolean;
+  data: ChooseProfileModalData | null;
+  variant?: "login" | "switch";
   onClose: () => void;
   onChoose: (perfil: "comprador" | "fornecedor") => Promise<void>;
 };
 
-export function ChooseProfileLoginModal({
-  state,
+const COPY = {
+  login: {
+    title: "Qual perfil você deseja acessar?",
+    description:
+      "Este e-mail está cadastrado como comprador e como fornecedor. Escolha com qual perfil deseja entrar nesta sessão.",
+    loading: "Entrando...",
+    error: "Não foi possível concluir o login",
+  },
+  switch: {
+    title: "Trocar de perfil",
+    description:
+      "Este e-mail possui cadastro como comprador e fornecedor. Escolha com qual perfil deseja continuar.",
+    loading: "Trocando...",
+    error: "Não foi possível trocar de perfil",
+  },
+} as const;
+
+export function ChooseProfileModal({
+  open,
+  data,
+  variant = "login",
   onClose,
   onChoose,
 }: Props) {
-  const open = state != null;
   const [selecting, setSelecting] = useState<"comprador" | "fornecedor" | null>(
     null
   );
   const [error, setError] = useState<string | null>(null);
+  const copy = COPY[variant];
 
   useEffect(() => {
     if (!open) {
@@ -49,7 +68,7 @@ export function ChooseProfileLoginModal({
     };
   }, [open, onClose, selecting]);
 
-  if (!state) return null;
+  if (!open || !data) return null;
 
   const handleChoose = async (perfil: "comprador" | "fornecedor") => {
     setError(null);
@@ -57,9 +76,7 @@ export function ChooseProfileLoginModal({
     try {
       await onChoose(perfil);
     } catch (e) {
-      setError(
-        e instanceof Error ? e.message : "Não foi possível concluir o login"
-      );
+      setError(e instanceof Error ? e.message : copy.error);
     } finally {
       setSelecting(null);
     }
@@ -80,7 +97,7 @@ export function ChooseProfileLoginModal({
       <div
         role="dialog"
         aria-modal="true"
-        aria-labelledby="choose-profile-login-title"
+        aria-labelledby="choose-profile-title"
         className="relative z-10 max-h-[min(90vh,640px)] w-full max-w-[520px] overflow-y-auto rounded-[25px] border border-[#E2E8F0] bg-white p-6 shadow-xl sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
@@ -96,14 +113,13 @@ export function ChooseProfileLoginModal({
 
         <div className="pr-8">
           <h2
-            id="choose-profile-login-title"
+            id="choose-profile-title"
             className="text-xl font-bold text-[#0B2443] sm:text-2xl"
           >
-            Qual perfil você deseja acessar?
+            {copy.title}
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-gray-600">
-            Este e-mail está cadastrado como comprador e como fornecedor.
-            Escolha com qual perfil deseja entrar nesta sessão.
+            {copy.description}
           </p>
 
           <div className="mt-6 flex flex-col gap-4">
@@ -121,13 +137,13 @@ export function ChooseProfileLoginModal({
                   Comprador
                 </span>
                 <p className="mt-1 text-sm font-semibold text-[#0B2443]">
-                  {state.comprador.nomeCompleto}
+                  {data.comprador.nomeCompleto}
                 </p>
                 <p className="mt-0.5 truncate text-xs text-gray-500">
-                  {state.comprador.email}
+                  {data.comprador.email}
                 </p>
                 {selecting === "comprador" && (
-                  <p className="mt-2 text-xs text-[#4F83A6]">Entrando...</p>
+                  <p className="mt-2 text-xs text-[#4F83A6]">{copy.loading}</p>
                 )}
               </div>
             </button>
@@ -146,13 +162,13 @@ export function ChooseProfileLoginModal({
                   Fornecedor
                 </span>
                 <p className="mt-1 text-sm font-semibold text-[#0B2443]">
-                  {state.fornecedor.nomeFantasia}
+                  {data.fornecedor.nomeFantasia}
                 </p>
                 <p className="mt-0.5 truncate text-xs text-gray-500">
-                  {state.fornecedor.email}
+                  {data.fornecedor.email}
                 </p>
                 {selecting === "fornecedor" && (
-                  <p className="mt-2 text-xs text-[#7BA32E]">Entrando...</p>
+                  <p className="mt-2 text-xs text-[#7BA32E]">{copy.loading}</p>
                 )}
               </div>
             </button>

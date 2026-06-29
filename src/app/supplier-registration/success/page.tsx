@@ -39,7 +39,7 @@ function SupplierSuccessContent() {
           <div>
             <h1 className="text-xl font-semibold">Cadastro Fornecedor</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Preencha os dados da sua empresa para começar a buscar fornecedores.
+              Seu cadastro foi concluído. Encontre compradores e oportunidades no marketplace.
             </p>
           </div>
         </div>
@@ -135,7 +135,7 @@ function SuccessFallback() {
           <div>
             <h1 className="text-xl font-semibold">Cadastro Fornecedor</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Preencha os dados da sua empresa para começar a buscar fornecedores.
+              Seu cadastro foi concluído. Encontre compradores e oportunidades no marketplace.
             </p>
           </div>
         </div>

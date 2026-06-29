@@ -68,6 +68,7 @@ export type ProfissionalPerfil = {
   emailPessoal: string;
   website: string | null;
   redeSocial: string | null;
+  tipoEmpresa: string;
   categoriasProdutos: string[];
   descricaoInstitucional: string;
   portfolioUrls: string[];

@@ -12,9 +12,9 @@ import Link from "next/link";
 import {
   EnvelopeSimpleIcon,
   MapPinIcon,
-  FileTextIcon,
   MagnifyingGlassIcon,
 } from "@phosphor-icons/react";
+import { DiscoveryPortfolioPreview } from "@/components/discovery/DiscoveryPortfolioPreview";
 import {
   DiscoveryResultsCount,
   DiscoverySearchSection,
@@ -23,7 +23,9 @@ import {
   DiscoveryProfileModal,
   type DiscoveryProfileModalState,
 } from "@/components/discovery/DiscoveryProfileModal";
-import { getCategoriasFiltroPorPerfil } from "@/lib/catalog/materiaisCadastro";
+import { formatCategoriaLabel } from "@/lib/catalog/formatCategoriaLabel";
+import { categoriasParaFiltro } from "@/lib/catalog/categoriasFiltro";
+import { useCategoriasCadastro } from "@/hooks/useCategoriasCadastro";
 import { FIND_BUYERS_PATH } from "@/lib/routing";
 
 type DiscoveryProfileType = "fornecedor" | "profissional";
@@ -58,10 +60,9 @@ function SupplierCard({
 
   const cidade = supplier.cidade;
   const estado = supplier.estado;
-  const supplierExt = supplier as SupplierItem & {
-    arquivos?: { nome: string; url: string }[];
-  };
-  const arquivos = supplierExt.arquivos ?? [];
+  const portfolioUrls = Array.isArray(supplier.portfolioUrls)
+    ? supplier.portfolioUrls
+    : [];
 
   return (
     <article className="flex flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md sm:flex-row">
@@ -89,32 +90,15 @@ function SupplierCard({
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded bg-[#EEF6DB] px-2.5 py-1 text-xs text-[#5a7a1f]"
+                className="rounded bg-[#EEF6DB] px-2.5 py-1 text-xs capitalize text-[#5a7a1f]"
               >
-                {tag}
+                {formatCategoriaLabel(tag)}
               </span>
             ))}
           </div>
         )}
 
-        {arquivos.length > 0 ? (
-          <div className="flex flex-wrap gap-4 pt-1">
-            {arquivos.map((arq, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-1.5 text-xs text-gray-600"
-              >
-                <FileTextIcon size={14} weight="regular" />
-                <span>{arq.nome}</span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div
-            className="min-h-6"
-            data-aria-label="Área preparada para arquivos futuros"
-          />
-        )}
+        <DiscoveryPortfolioPreview urls={portfolioUrls} />
       </div>
 
       <div className="mt-4 flex shrink-0 flex-row gap-2 border-t border-gray-100 pt-4 sm:mt-0 sm:ml-6 sm:flex-col sm:border-l sm:border-t-0 sm:pt-0 sm:pl-6">
@@ -151,6 +135,9 @@ function ProfessionalCard({
   const descricao =
     professional.descricaoInstitucional?.slice(0, 180) +
     (professional.descricaoInstitucional?.length > 180 ? "..." : "");
+  const portfolioUrls = Array.isArray(professional.portfolioUrls)
+    ? professional.portfolioUrls
+    : [];
 
   return (
     <article className="flex flex-col rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition hover:shadow-md sm:flex-row">
@@ -172,13 +159,15 @@ function ProfessionalCard({
             {tags.map((tag) => (
               <span
                 key={tag}
-                className="rounded bg-[#E7EFF5] px-2.5 py-1 text-xs text-[#4F83A6]"
+                className="rounded bg-[#E7EFF5] px-2.5 py-1 text-xs capitalize text-[#4F83A6]"
               >
-                {tag}
+                {formatCategoriaLabel(tag)}
               </span>
             ))}
           </div>
         )}
+
+        <DiscoveryPortfolioPreview urls={portfolioUrls} />
       </div>
 
       <div className="mt-4 flex shrink-0 flex-row gap-2 border-t border-gray-100 pt-4 sm:mt-0 sm:ml-6 sm:flex-col sm:border-l sm:border-t-0 sm:pt-0 sm:pl-6">
@@ -263,6 +252,7 @@ export default function FindSuppliersPage() {
     useState<ListResponse<ProfessionalItem> | null>(null);
   const [profileModal, setProfileModal] =
     useState<DiscoveryProfileModalState>(null);
+  const { items: categoriasCadastro } = useCategoriasCadastro(profileTypeInput);
 
   useEffect(() => {
     if (authLoading) return;
@@ -345,7 +335,7 @@ export default function FindSuppliersPage() {
     );
   }
 
-  const categoryOptions = getCategoriasFiltroPorPerfil(profileTypeInput).filter(
+  const categoryOptions = categoriasParaFiltro(categoriasCadastro).filter(
     (opt) => opt.value !== "",
   );
 
