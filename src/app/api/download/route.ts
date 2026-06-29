@@ -6,10 +6,10 @@ import {
 } from "@/lib/auth/verify-jwt"
 
 const s3 = new S3Client({
-  region: process.env.AWS_REGION!,
+  region: process.env.APP_AWS_REGION!,
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    accessKeyId: process.env.APP_AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.APP_AWS_SECRET_ACCESS_KEY!,
   },
   requestChecksumCalculation: "WHEN_REQUIRED",
   responseChecksumValidation: "WHEN_REQUIRED",
@@ -28,8 +28,8 @@ export async function GET(req: Request) {
     return Response.json({ error: "url é obrigatório" }, { status: 400 })
   }
 
-  const bucket = process.env.AWS_BUCKET_NAME!
-  const prefix = `https://${bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/`
+  const bucket = process.env.APP_AWS_BUCKET_NAME!
+  const prefix = `https://${bucket}.s3.${process.env.APP_AWS_REGION}.amazonaws.com/`
 
   if (!publicUrl.startsWith(prefix)) {
     return Response.json({ error: "URL inválida" }, { status: 400 })
