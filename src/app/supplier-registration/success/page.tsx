@@ -7,7 +7,7 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { paymentConfig, PaymentMethod } from "../payment/payment.config"
 import { ArrowLeftIcon, CubeIcon } from "@phosphor-icons/react"
 import Link from "next/link"
-import { FIND_BUYERS_PATH } from "@/lib/routing"
+import { MY_PROFILE_PATH } from "@/lib/routing"
 
 function SupplierSuccessContent() {
   const searchParams = useSearchParams()
@@ -39,7 +39,7 @@ function SupplierSuccessContent() {
           <div>
             <h1 className="text-xl font-semibold">Cadastro Fornecedor</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Seu cadastro foi concluído. Encontre compradores e oportunidades no marketplace.
+              Seu cadastro foi concluído. Acesse seu perfil para gerenciar seus dados.
             </p>
           </div>
         </div>
@@ -103,7 +103,7 @@ function SupplierSuccessContent() {
 
             <Button
               className="bg-[#5B86A8] hover:bg-[#4A748F]"
-              onClick={() => router.push(FIND_BUYERS_PATH)}
+              onClick={() => router.push(MY_PROFILE_PATH)}
             >
               Continuar
             </Button>
@@ -135,7 +135,7 @@ function SuccessFallback() {
           <div>
             <h1 className="text-xl font-semibold">Cadastro Fornecedor</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Seu cadastro foi concluído. Encontre compradores e oportunidades no marketplace.
+              Seu cadastro foi concluído. Acesse seu perfil para gerenciar seus dados.
             </p>
           </div>
         </div>

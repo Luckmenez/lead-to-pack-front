@@ -26,7 +26,7 @@ import {
 import { formatCategoriaLabel } from "@/lib/catalog/formatCategoriaLabel";
 import { categoriasParaFiltro } from "@/lib/catalog/categoriasFiltro";
 import { useCategoriasCadastro } from "@/hooks/useCategoriasCadastro";
-import { FIND_BUYERS_PATH } from "@/lib/routing";
+import { MY_PROFILE_PATH } from "@/lib/routing";
 
 type DiscoveryProfileType = "fornecedor" | "profissional";
 
@@ -261,7 +261,7 @@ export default function FindSuppliersPage() {
       return;
     }
     if (user.tipo !== "comprador") {
-      router.replace(FIND_BUYERS_PATH);
+      router.replace(MY_PROFILE_PATH);
     }
   }, [user, authLoading, router]);
 
