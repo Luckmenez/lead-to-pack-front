@@ -13,8 +13,8 @@ export default function Error({
     <RoutePageError
       error={error}
       reset={reset}
-      backHref="/find-buyers"
-      backLabel="Voltar à busca"
+      backHref="/my-profile"
+      backLabel="Voltar ao meu perfil"
     />
   );
 }

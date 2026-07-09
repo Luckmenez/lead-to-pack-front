@@ -7,7 +7,7 @@ import { useSearchParams, useRouter } from "next/navigation"
 import { paymentConfig, PaymentMethod } from "../payment/payment.config"
 import { ArrowLeftIcon, BriefcaseIcon } from "@phosphor-icons/react"
 import Link from "next/link"
-import { FIND_BUYERS_PATH } from "@/lib/routing"
+import { MY_PROFILE_PATH } from "@/lib/routing"
 
 function ProfSuccessContent() {
   const searchParams = useSearchParams()
@@ -103,7 +103,7 @@ function ProfSuccessContent() {
 
             <Button
               className="bg-[#5B86A8] hover:bg-[#4A748F]"
-              onClick={() => router.push(FIND_BUYERS_PATH)}
+              onClick={() => router.push(MY_PROFILE_PATH)}
             >
               Continuar
             </Button>
