@@ -25,6 +25,11 @@ export async function POST(req: Request) {
         debugHasAuthHeader: authHeader !== null,
         debugAuthHeaderPreview: authHeader?.slice(0, 15) ?? null,
         debugHasJwtSecretEnv: Boolean(process.env.JWT_SECRET),
+        debugHasAppAwsBucketEnv: Boolean(process.env.APP_AWS_BUCKET_NAME),
+        debugHasNextPublicApiUrlEnv: Boolean(process.env.NEXT_PUBLIC_API_URL),
+        debugEnvKeysSample: Object.keys(process.env).filter(
+          (k) => k.includes("AWS") || k.includes("JWT") || k.includes("NEXT_PUBLIC"),
+        ),
       },
       { status: 401 },
     )
