@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react"
 import { useAuth } from "@/contexts/AuthContext"
-import { triggerSessionExpired } from "@/lib/auth/session-handler"
+import { apiClient } from "@/lib/api/client"
 import { SessionExpiredError } from "@/lib/api/errors"
 
 type PortfolioDownloadLinkProps = {
@@ -27,20 +27,10 @@ export function PortfolioDownloadLink({
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`/api/download?url=${encodeURIComponent(url)}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-
-      if (!res.ok) {
-        if (res.status === 401) {
-          triggerSessionExpired()
-          throw new SessionExpiredError()
-        }
-        const body = (await res.json().catch(() => ({}))) as { error?: string }
-        throw new Error(body.error ?? "Erro ao abrir arquivo")
-      }
-
-      const { downloadUrl } = (await res.json()) as { downloadUrl: string }
+      const { downloadUrl } = await apiClient<{ downloadUrl: string }>(
+        `/portfolio/download-url?url=${encodeURIComponent(url)}`,
+        { token },
+      )
       window.open(downloadUrl, "_blank", "noopener,noreferrer")
     } catch (err) {
       if (!(err instanceof SessionExpiredError)) {

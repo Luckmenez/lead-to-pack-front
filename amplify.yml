@@ -4,13 +4,9 @@ frontend:
     preBuild:
       commands:
         - npm ci --cache .npm --prefer-offline
-        - echo "DEBUG total env count:" && env | wc -l
-        - echo "DEBUG matching vars:" && (env | grep -E '^(APP_AWS_|JWT_SECRET=)' || echo "NONE FOUND")
     build:
       commands:
         - npm run build
-        - env | grep -E '^(APP_AWS_[A-Z_]+|JWT_SECRET)=' >> .next/standalone/.env.production || true
-        - echo "DEBUG .env.production content:" && (cat .next/standalone/.env.production || echo "FILE MISSING")
   artifacts:
     baseDirectory: .next
     files:

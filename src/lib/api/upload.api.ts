@@ -1,5 +1,4 @@
-import { triggerSessionExpired } from "@/lib/auth/session-handler"
-import { SessionExpiredError } from "@/lib/api/errors"
+import { apiClient } from "@/lib/api/client"
 
 type UploadContext = {
   userType: "fornecedor" | "profissional"
@@ -7,39 +6,24 @@ type UploadContext = {
   token: string
 }
 
-function handleUnauthorized(status: number, hadToken: boolean): void {
-  if (status === 401 && hadToken) {
-    triggerSessionExpired()
-    throw new SessionExpiredError()
-  }
-}
-
 async function getPresignedUrl(
   filename: string,
   contentType: string,
   ctx: UploadContext,
 ) {
-  const res = await fetch("/api/upload", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${ctx.token}`,
+  return apiClient<{ presignedUrl: string; publicUrl: string }>(
+    "/portfolio/upload-url",
+    {
+      method: "POST",
+      token: ctx.token,
+      body: JSON.stringify({
+        filename,
+        contentType,
+        userType: ctx.userType,
+        userId: ctx.userId,
+      }),
     },
-    body: JSON.stringify({
-      filename,
-      contentType,
-      userType: ctx.userType,
-      userId: ctx.userId,
-    }),
-  })
-
-  if (!res.ok) {
-    handleUnauthorized(res.status, Boolean(ctx.token))
-    const body = (await res.json().catch(() => ({}))) as { error?: string }
-    throw new Error(body.error ?? "Erro ao gerar URL de upload")
-  }
-
-  return res.json() as Promise<{ presignedUrl: string; publicUrl: string }>
+  )
 }
 
 export async function uploadFileToS3(
@@ -71,20 +55,11 @@ export async function uploadFilesToS3(
 }
 
 export async function deleteS3File(url: string, token: string): Promise<void> {
-  const res = await fetch("/api/delete", {
+  await apiClient("/portfolio/delete", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
+    token,
     body: JSON.stringify({ url }),
   })
-
-  if (!res.ok) {
-    handleUnauthorized(res.status, Boolean(token))
-    const body = (await res.json().catch(() => ({}))) as { error?: string }
-    throw new Error(body.error ?? "Erro ao remover arquivo")
-  }
 }
 
 export async function deleteS3Files(urls: string[], token: string): Promise<void> {
