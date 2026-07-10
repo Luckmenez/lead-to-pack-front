@@ -6,10 +6,10 @@ import {
 } from "@/lib/auth/verify-jwt"
 
 const s3 = new S3Client({
-  region: process.env.AWS_REGION!,
+  region: process.env.APP_AWS_REGION!,
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    accessKeyId: process.env.APP_AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.APP_AWS_SECRET_ACCESS_KEY!,
   },
   requestChecksumCalculation: "WHEN_REQUIRED",
   responseChecksumValidation: "WHEN_REQUIRED",
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
 
   await s3.send(
     new DeleteObjectCommand({
-      Bucket: process.env.AWS_BUCKET_NAME!,
+      Bucket: process.env.APP_AWS_BUCKET_NAME!,
       Key: key,
     }),
   )

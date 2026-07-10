@@ -76,8 +76,8 @@ export function canDeletePortfolioFile(user: JwtPayload, key: string): boolean {
 }
 
 export function parsePortfolioKeyFromPublicUrl(publicUrl: string): string | null {
-  const bucket = process.env.AWS_BUCKET_NAME
-  const region = process.env.AWS_REGION
+  const bucket = process.env.APP_AWS_BUCKET_NAME
+  const region = process.env.APP_AWS_REGION
   if (!bucket || !region) return null
 
   const prefix = `https://${bucket}.s3.${region}.amazonaws.com/`
