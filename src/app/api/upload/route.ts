@@ -15,6 +15,10 @@ const s3 = new S3Client({
 const ALLOWED_USER_TYPES = new Set(["fornecedor", "profissional"])
 
 export async function POST(req: Request) {
+  // DEBUG TEMPORÁRIO — remover depois de diagnosticar o 401
+  console.log("[DEBUG] full env keys:", JSON.stringify(Object.keys(process.env).sort()))
+  console.log("[DEBUG] total env keys count:", Object.keys(process.env).length)
+
   const user = getAuthenticatedUser(req)
   if (!user) {
     // DEBUG TEMPORÁRIO — remover depois de diagnosticar o 401
