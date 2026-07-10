@@ -17,7 +17,17 @@ const ALLOWED_USER_TYPES = new Set(["fornecedor", "profissional"])
 export async function POST(req: Request) {
   const user = getAuthenticatedUser(req)
   if (!user) {
-    return Response.json({ error: "Não autorizado" }, { status: 401 })
+    // DEBUG TEMPORÁRIO — remover depois de diagnosticar o 401
+    const authHeader = req.headers.get("authorization")
+    return Response.json(
+      {
+        error: "Não autorizado",
+        debugHasAuthHeader: authHeader !== null,
+        debugAuthHeaderPreview: authHeader?.slice(0, 15) ?? null,
+        debugHasJwtSecretEnv: Boolean(process.env.JWT_SECRET),
+      },
+      { status: 401 },
+    )
   }
 
   const { filename, contentType, userType, userId } = await req.json()
